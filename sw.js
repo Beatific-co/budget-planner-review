@@ -1,6 +1,6 @@
 /* Budget Planner service worker. Caches the whole app on install so it opens offline afterwards.
-   e3c3b4ff19 is replaced at build time with a hash of the app, so a new build becomes a new cache. */
-const VERSION = 'e3c3b4ff19';
+   f79d03d1a7 is replaced at build time with a hash of the app, so a new build becomes a new cache. */
+const VERSION = 'f79d03d1a7';
 const CACHE = 'budget-planner-' + VERSION;
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
 
