@@ -1,28 +1,13 @@
-/* Budget Planner service worker. Caches the whole app on install so it opens offline afterwards.
-   f79d03d1a7 is replaced at build time with a hash of the app, so a new build becomes a new cache. */
-const VERSION = 'f79d03d1a7';
-const CACHE = 'budget-planner-' + VERSION;
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
-
-self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
-});
+/* Kill switch. The review site no longer ships a service worker (the install/PWA build was removed).
+   Any browser that still has the old worker picks this one up, which clears the old caches,
+   unregisters itself and reloads open tabs so they fetch the live file. */
+self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith('budget-planner-') && k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
-});
-self.addEventListener('fetch', (e) => {
-  const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
-  e.respondWith((async () => {
-    const cache = await caches.open(CACHE);
-    const key = req.mode === 'navigate' ? './index.html' : req;
-    const hit = await cache.match(key, { ignoreSearch: true });
-    if (hit) {
-      // Refresh in the background when online; the next open gets the new file.
-      e.waitUntil(fetch(req).then((res) => { if (res && res.ok) return cache.put(key, res.clone()); }).catch(() => {}));
-      return hit;
-    }
-    try { const res = await fetch(req); if (res && res.ok) cache.put(req, res.clone()); return res; }
-    catch (err) { return (await cache.match('./index.html')) || Response.error(); }
+  e.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => caches.delete(k)));
+    await self.registration.unregister();
+    const clients = await self.clients.matchAll({ type: 'window' });
+    clients.forEach((c) => c.navigate(c.url));
   })());
 });
