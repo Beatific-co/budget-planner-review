@@ -4254,7 +4254,7 @@ const Welcome = {
               <button class="btn secondary lg" id="w-restore">Restore from Backup</button>
               <input type="file" id="w-file" accept=".json,application/json" class="hidden">
             </div>
-            ${BP.Tutorials.url('00') || BP.Tutorials.url('01') ? BP.html`<div class="welcome-videos">${BP.Tutorials.link(BP.Tutorials.forPage('tour'), { text: 'Watch the quick intro', cls: 'quiet' })}${BP.Tutorials.link(BP.Tutorials.forPage('welcome'), { text: 'How setup works', cls: 'quiet' })}</div>` : ''}
+            ${BP.Tutorials.url('01') ? BP.html`<div class="welcome-videos">${BP.Tutorials.link(BP.Tutorials.forPage('welcome'), { text: 'How setup works', cls: 'quiet' })}</div>` : ''}
             <img class="sprig" src="${BP.img('SPRIG')}" alt="" aria-hidden="true">
             <p class="welcome-note">Your financial information stays on this device. This planner does not send your data anywhere. You control your backups and can export your information at any time.</p>
           </section>
