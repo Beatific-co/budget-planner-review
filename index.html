@@ -57,6 +57,8 @@
   --skyblue: #C9DCE3;
   --success: #4F6E4B;
   --success-soft: #E3EADF;
+  --verified: #34A853;
+  --verified-ink: #1E7E34;
   --warning: #9C7A2E;
   --warning-soft: #F0E7CF;
   --danger: #A8463A;
@@ -143,6 +145,8 @@ html[data-theme="dark"] {
   --accent-soft: var(--rose-soft);
   --success: #8DB889;
   --success-soft: #24312A;
+  --verified: #5DC873;
+  --verified-ink: #5DC873;
   --warning: #D8B266;
   --warning-soft: #3A3120;
   --danger: #E08B7E;
@@ -315,7 +319,7 @@ html:not([data-style="masculine"]) .stat[data-tone="calm"], html:not([data-style
 .topbar-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; }
 .topbar > * { flex-shrink: 0; }
 @media (max-width: 1200px) {
-  .backup-chip span, .user-chip .name, .save-status .txt { display: none; }
+  .backup-chip span, .user-chip .name, .user-chip .verified-word, .save-status .txt { display: none; }
   .save-status { min-width: auto; }
   .user-chip { padding-right: 4px; }
   .month-nav .label { min-width: 112px; font-size: 15px; }
@@ -591,6 +595,25 @@ html[data-theme="dark"] .notice.warning { color: var(--warning); }
 .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 .avatar.lg { width: 72px; height: 72px; font-size: 26px; }
 .avatar.xl { width: 96px; height: 96px; font-size: 34px; border: 1px solid var(--rule); }
+/* Verified seal: sits at the avatar's corner; the check draws once on first load */
+.avatar-v { position: relative; display: inline-flex; flex: none; }
+.vseal { position: absolute; right: -6px; bottom: -5px; width: 19px; height: 19px; transform-origin: 50% 50%; }
+.avatar-v:is(.lg, .xl) .vseal { width: 24px; height: 24px; right: -6px; bottom: -3px; cursor: default; transition: transform 260ms var(--ease); }
+.avatar-v:is(.lg, .xl)::after { content: 'Verified'; position: absolute; left: calc(100% + 13px); bottom: -3px; height: 24px; line-height: 24px; padding: 0 11px; border-radius: 999px; background: var(--verified); color: #fff; font-size: 11px; font-weight: 600; letter-spacing: .04em; white-space: nowrap; z-index: 6; box-shadow: 0 2px 8px rgba(30,126,52,.28); opacity: 0; transform: translateX(-6px) scale(.9); transform-origin: left center; pointer-events: none; transition: opacity 200ms var(--ease), transform 260ms var(--ease); }
+@media (hover: hover) {
+  .avatar-v:is(.lg, .xl):hover .vseal { transform: scale(1.15) rotate(8deg); animation: vsealWiggle 600ms var(--ease); }
+  .avatar-v:is(.lg, .xl):hover::after { opacity: 1; transform: none; }
+}
+.avatar-v:is(.lg, .xl):focus-within::after { opacity: 1; transform: none; }
+@keyframes vsealWiggle { 0% { transform: scale(1); } 30% { transform: scale(1.3) rotate(-14deg); } 60% { transform: scale(1.2) rotate(10deg); } 100% { transform: scale(1.15) rotate(8deg); } }
+@media (prefers-reduced-motion: reduce) { .avatar-v:is(.lg, .xl):hover .vseal { animation: none; } }
+.vseal-bg { fill: var(--verified); stroke: var(--paper); stroke-width: 1.2; stroke-linejoin: round; paint-order: stroke; }
+.vseal-tick { fill: none; stroke: var(--paper); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.vseal.play { animation: vsealPop 520ms var(--ease) 200ms both; }
+.vseal.play .vseal-tick { stroke-dasharray: 1; animation: vsealTick 420ms var(--ease) 480ms both; }
+@keyframes vsealPop { 0% { transform: scale(0) rotate(-40deg); opacity: 0; } 60% { transform: scale(1.18) rotate(6deg); opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes vsealTick { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.user-chip .verified-word { font-size: 10.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--verified-ink); padding-right: 2px; }
 .avatar-pick { display: flex; align-items: center; gap: 16px; }
 .avatar-pick .btns { display: flex; gap: 8px; flex-wrap: wrap; }
 /* Style and theme choice cards */
@@ -738,12 +761,12 @@ html[data-motion="reduced"] .yt-link:hover { transform: none; }
 @media (max-width: 1000px) { .tx-row { grid-template-columns: 34px 1fr 120px 32px; } .tx-row .cat, .tx-row .acc { display: none; } }
 
 /* Accounts */
-.acct-card { padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; position: relative; min-height: 150px; }
+.acct-card { padding: 20px 22px 20px 30px; display: flex; flex-direction: column; gap: 10px; position: relative; min-height: 150px; }
 .acct-card .type { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); }
 .acct-card .nm { font-family: var(--font-display); font-size: 22px; }
 .acct-card .bal { font-family: var(--font-display); font-size: 30px; font-weight: 600; margin-top: auto; }
 .acct-card .menu-btn { position: absolute; top: 12px; right: 12px; }
-.acct-card .stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+.acct-card .stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 10px; }
 
 /* Monthly budget */
 .budget-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); margin-bottom: 18px; }
@@ -805,6 +828,7 @@ html[data-motion="reduced"] .yt-link:hover { transform: none; }
 
 /* Beam panel host */
 .beam-panel { position: relative; }
+@media (max-width: 640px) { .budget-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; } .budget-row .nm { grid-column: 1; } .budget-row .nums { grid-column: 2; grid-row: 1; } .budget-row .bar, .budget-row > :nth-child(2) { grid-column: 1 / -1; grid-row: 2; } }
 
 /* styles/charts.css */
 .chart { width: 100%; height: auto; overflow: visible; font-family: var(--font-body); }
@@ -1035,6 +1059,11 @@ html[data-motion="reduced"] .yt-link:hover { transform: none; }
 .lock-forgot { background: none; border: 0; padding: 6px 8px; font: inherit; font-size: 13px; color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .lock-forgot:hover { color: var(--ink); }
 .pin-setup .lock-error:empty, .pin-setup .pin-ok:empty { display: none; }
+.done-hero .avatar-v { display: flex; width: fit-content; margin: 0 auto 18px; }
+.done-hero .avatar-v .avatar { margin: 0; }
+.verified-note { margin: 10px 0 0; font-size: 12.5px; color: var(--ink-3); }
+.verified-note .verified-word { color: var(--verified-ink); font-weight: 600; }
+.verified-note .verified-word::before { content: '\2713\00a0'; }
 
 /* styles/mobile.css */
 /* Phone layout (≤ 640px). Desktop-first file; everything here only tightens the small screen. */
@@ -1085,7 +1114,7 @@ html[data-motion="reduced"] .yt-link:hover { transform: none; }
   .topbar #topbar-month { order: 10; flex: 1 1 100%; height: 48px; justify-content: center; border-top: 1px solid var(--rule-soft); margin: 0 -12px 0 -16px; padding: 0 16px; }
   .topbar #topbar-month .month-nav { width: 100%; justify-content: space-between; }
   .topbar #topbar-month .month-nav .label { flex: 1; text-align: center; }
-  .topbar #quick-add, .save-status .txt, .backup-chip span, .user-chip .name { display: none; }
+  .topbar #quick-add, .save-status .txt, .backup-chip span, .user-chip .name, .user-chip .verified-word { display: none; }
   .save-status { min-width: 0; }
   .backup-chip { padding: 0 8px; min-width: 40px; justify-content: center; }
   .user-chip { padding: 0 4px; height: 40px; }
@@ -2714,6 +2743,7 @@ const TUTORIAL_URLS = {
   '16': 'https://youtu.be/_XGXhsDBnWY',
   '17': 'https://youtu.be/ErPFoFUeGOg',
   '18': 'https://youtu.be/QBnhBVMRb8A',
+  '19': 'https://youtu.be/9G5Q1mo4pRg',
 };
 // END TUTORIAL_URLS
 
@@ -2739,6 +2769,7 @@ const TUTORIAL_LIST = [
   ['16', 'nospend', 'No-spend challenge'],
   ['17', 'settings', 'Settings and backup'],
   ['18', null, 'Where to find the video tutorials'],
+  ['19', null, 'Full tutorial (all chapters)'],
 ];
 
 // Only real YouTube links are ever rendered.
@@ -3136,6 +3167,26 @@ function avatarHtml(profile, cls) {
   const p = profile || BP.store.state.profile;
   return BP.html`<span class="avatar ${cls || ''}">${p.avatar ? BP.html`<img src="${p.avatar}" alt="">` : BP.initials(p.name)}</span>`;
 }
+/** Registered copies get a green "Verified" seal. Not shown in preview or demo builds (sample data, no real owner). */
+function isVerified(profile) {
+  const p = profile || BP.store.state.profile;
+  return !!p.licensedTo && !(typeof PREVIEW_MODE !== 'undefined' && PREVIEW_MODE) && !(typeof DEMO_MODE !== 'undefined' && DEMO_MODE);
+}
+const SEAL_PATH = (() => {
+  const pts = [];
+  for (let i = 0; i < 80; i++) { const a = (i / 80) * Math.PI * 2; const r = 10.7 + 1.2 * Math.cos(a * 10); pts.push((12 + r * Math.cos(a)).toFixed(2) + ' ' + (12 + r * Math.sin(a)).toFixed(2)); }
+  return 'M' + pts.join('L') + 'Z';
+})();
+let sealIntro = false;
+/** The check draws itself once per page load; every seal drawn in the first two seconds plays it together. */
+function sealHtml() {
+  if (!sealIntro) { sealIntro = true; setTimeout(() => { sealIntro = 'done'; }, 2000); }
+  return BP.raw(`<svg class="vseal${sealIntro === true ? ' play' : ''}" viewBox="0 0 24 24" role="img" aria-label="Verified"><path class="vseal-bg" d="${SEAL_PATH}"/><path class="vseal-tick" pathLength="1" d="M7.4 12.6l3 3 6.2-6.6"/></svg>`);
+}
+/** Avatar with the Verified seal at its corner (seal sits outside the avatar so its round crop does not clip it) */
+function avatarVerifiedHtml(profile, cls) {
+  return BP.html`<span class="avatar-v ${cls || ''}">${avatarHtml(profile, cls)}${isVerified(profile) ? sealHtml() : ''}</span>`;
+}
 /** Read an image file, centre-crop to a 192px square, return a small JPEG data URL. */
 function readAvatar(file) {
   return new Promise((resolve, reject) => {
@@ -3163,7 +3214,7 @@ function themeChoice(name, selected) {
 }
 function wireThemeChoice(root, onChange) { root.querySelectorAll('[data-theme-choice]').forEach((g) => g.addEventListener('click', (e) => { const b = e.target.closest('[data-theme-opt]'); if (!b) return; g.querySelectorAll('button').forEach((x) => x.classList.toggle('active', x === b)); g.querySelector('input').value = b.dataset.themeOpt; if (onChange) onChange(b.dataset.themeOpt); })); }
 function avatarPicker(profile) {
-  return BP.html`<div class="avatar-pick" data-avatar-pick>${avatarHtml(profile, 'xl')}<div><div class="btns"><button type="button" class="btn secondary sm" data-avatar-choose>${BP.icon('upload')} ${profile.avatar ? 'Change photo' : 'Add a photo'}</button>${profile.avatar ? BP.html`<button type="button" class="btn ghost sm" data-avatar-remove>Remove</button>` : ''}</div><div class="hint mt-8" style="font-size:12px;color:var(--ink-4)">Pick a photo from this device. It is stored only in this planner, cropped to a small square.</div><input type="file" accept="image/*" class="hidden" data-avatar-file></div></div>`;
+  return BP.html`<div class="avatar-pick" data-avatar-pick>${avatarVerifiedHtml(profile, 'xl')}<div><div class="btns"><button type="button" class="btn secondary sm" data-avatar-choose>${BP.icon('upload')} ${profile.avatar ? 'Change photo' : 'Add a photo'}</button>${profile.avatar ? BP.html`<button type="button" class="btn ghost sm" data-avatar-remove>Remove</button>` : ''}</div><div class="hint mt-8" style="font-size:12px;color:var(--ink-4)">Pick a photo from this device. It is stored only in this planner, cropped to a small square.</div><input type="file" accept="image/*" class="hidden" data-avatar-file></div></div>`;
 }
 /** Wires a picker; onChange(dataUrl|null). Re-renders the picker in place. */
 function wireAvatarPicker(root, profile, onChange) {
@@ -3282,7 +3333,7 @@ function countUp(root, duration = 600) {
 }
 
 BP.img = img; BP.applyTheme = applyTheme;
-BP.UI = { img, applyTheme, avatarHtml, readAvatar, styleChoice, wireStyleChoice, themeChoice, wireThemeChoice, avatarPicker, wireAvatarPicker, openModal, confirmDialog, toast, openMenu, closeMenus, wireTooltips, helpIcon, emptyState, monthNav, wireMonthNav, categorySelect, accountSelect, catIcon, colorPicker, wireColorPickers, iconPicker, wireIconPickers, stepsIndicator, beamPanel, modalStack, wireRipples, countUp, motionReduced };
+BP.UI = { img, applyTheme, avatarHtml, avatarVerifiedHtml, isVerified, readAvatar, styleChoice, wireStyleChoice, themeChoice, wireThemeChoice, avatarPicker, wireAvatarPicker, openModal, confirmDialog, toast, openMenu, closeMenus, wireTooltips, helpIcon, emptyState, monthNav, wireMonthNav, categorySelect, accountSelect, catIcon, colorPicker, wireColorPickers, iconPicker, wireIconPickers, stepsIndicator, beamPanel, modalStack, wireRipples, countUp, motionReduced };
 
 /* ===== js/ui/help-content.js ===== */
 // Contextual help: all tip copy and mini illustrations live here. Edit this file to change what the "?" icons say.
@@ -4127,7 +4178,7 @@ const Shell = {
             <span class="save-status" id="save-status" aria-live="polite"><span class="dot"></span><span class="txt">Saved</span></span><span class="help-host" data-help="storage"></span>
             <button class="backup-chip" id="backup-chip" data-tour="backup" title="Backup status">${BP.icon('shield')}<span id="backup-chip-text">Backup</span></button>
             <button class="btn primary sm" id="quick-add" data-tour="quick-add">${BP.icon('plus')} Add</button>
-            <button class="user-chip" id="user-chip" title="Settings">${BP.UI.avatarHtml(s.profile)}<span class="name">${s.profile.name || 'You'}</span></button>
+            <button class="user-chip" id="user-chip" title="Settings">${BP.UI.avatarHtml(s.profile)}<span class="name">${s.profile.name || 'You'}</span>${BP.UI.isVerified(s.profile) ? BP.html`<span class="verified-word">Verified</span>` : ''}</button>
           </header>
           <button type="button" class="gamify-strip" id="gamify-strip" aria-label="Your points"></button>
           <main id="page" class="page"></main>
@@ -4500,7 +4551,7 @@ const Setup = {
         <div class="notice">${BP.icon('info')}<span>Reminders appear while this planner is open. There are no background notifications. Browser storage is not encrypted, so keep your backup files somewhere safe.</span></div>`;
       default: {
         const accs = d.accounts.filter((a) => a.name.trim());
-        return BP.html`<div class="done-hero"><img src="${BP.img('EMPTY')}" alt="">${d.avatar ? BP.UI.avatarHtml({ name: d.name, avatar: d.avatar }, 'lg') : ''}<h2>Lovely, <span class="script">${d.name}</span></h2><p class="lead mt-8">Here is your planner at a glance. Change anything later in Settings.</p><div class="license-chip static mt-12"><span class="caps">Your license key</span><span class="license-key-sm">${BP.License.key(d.name, BP.Dates.todayISO())}</span></div></div>
+        return BP.html`<div class="done-hero"><img src="${BP.img('EMPTY')}" alt="">${d.avatar ? BP.UI.avatarVerifiedHtml({ name: d.name, avatar: d.avatar, licensedTo: d.name }, 'lg') : ''}<h2>Lovely, <span class="script">${d.name}</span></h2><p class="lead mt-8">Here is your planner at a glance. Change anything later in Settings.</p><div class="license-chip static mt-12"><span class="caps">Your license key</span><span class="license-key-sm">${BP.License.key(d.name, BP.Dates.todayISO())}</span></div><p class="verified-note"><span class="verified-word">Verified</span> For personal use only, licensed to you alone.</p></div>
         <div class="summary-grid">
           <div><div class="k">Name</div><div class="v script">${d.name}</div></div>
           <div><div class="k">Currency</div><div class="v">${d.currency} · ${M.symbol(d.currency)}</div></div>
@@ -4973,7 +5024,7 @@ BP.Router.register('dashboard', {
     const delta = (cur, prv, lowerIsBetter) => prv ? BP.html`<span class="${(cur === prv) ? '' : ((cur > prv) !== !!lowerIsBetter) ? 'pos' : 'neg'}">${cur >= prv ? '+' : '−'}${BP.pct(Math.abs(cur - prv), prv)}%</span> vs ${D.monthLabel(prevKey, true)}` : 'No data last month';
     page.innerHTML = BP.html`
       <div class="greeting">
-        <div class="who">${s.profile.avatar ? BP.UI.avatarHtml(s.profile, 'lg') : ''}<div><div class="kicker">${D.monthLabel(key)}</div><h1>${greet},<span class="script">${s.profile.name || 'friend'}</span></h1></div></div>
+        <div class="who">${s.profile.avatar ? BP.UI.avatarVerifiedHtml(s.profile, 'lg') : ''}<div><div class="kicker">${D.monthLabel(key)}</div><h1>${greet},<span class="script">${s.profile.name || 'friend'}</span></h1></div></div>
         <div class="meta">Last backup: ${lastBackup}<br>${s.accounts.length} account${s.accounts.length === 1 ? '' : 's'} · ${s.transactions.length} transactions</div>
       </div>
       ${!hasAny ? BP.html`<div class="card mb-16">${BP.UI.emptyState({ action: 'quick-add' })}<div class="center" style="margin-top:-18px;padding-bottom:12px"><button class="btn ghost sm" data-action="sample">Or load sample data to explore</button></div></div>` : ''}
