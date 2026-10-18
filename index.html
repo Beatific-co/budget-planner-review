@@ -124,6 +124,8 @@ html[data-style="masculine"] {
 }
 
 /* Dark theme */
+/* Dark tokens are for the screen only: printing always uses the light paper palette (DESIGN.md 2.4: never print dark mode). */
+@media screen {
 html[data-theme="dark"] {
   --paper: #1A1816;
   --paper-deep: #242019;
@@ -166,6 +168,7 @@ html[data-theme="dark"][data-style="masculine"] {
   --tint-1: #243330; --tint-2: #3A3120; --tint-3: #262E38; --tint-4: #3A2A24;
   --c1: #F1EEE6; --c2: #8FB3A6; --c3: #D1A05A; --c4: #D8785B; --c5: #8C9FB8;
   --c6: #C9B79C; --c7: #5E8A74; --c8: #9C86A6; --c9: #A9B39B; --c10: #A69684;
+}
 }
 html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-motion="reduced"] *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; animation-delay: 0ms !important; }
 @media (prefers-reduced-motion: reduce) {
@@ -266,7 +269,7 @@ table { border-collapse: collapse; width: 100%; }
 .save-status.error .dot { background: var(--danger); }
 @keyframes pulse { 50% { opacity: .35; } }
 .user-chip { display: inline-flex; align-items: center; gap: 10px; height: 34px; padding: 0 12px 0 4px; border: 1px solid var(--rule); border-radius: 999px; font-size: 13px; }
-.user-chip .name { font-family: var(--font-script); font-size: 20px; line-height: 1; color: var(--ink); padding-right: 2px; }
+.user-chip .name { font-family: var(--font-script); font-size: 20px; line-height: 1; color: var(--ink); padding-right: 2px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-family: var(--font-display); font-size: 12px; }
 .backup-chip { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); border: 1px solid transparent; background: transparent; border-radius: 999px; }
 .backup-chip:hover { border-color: var(--rule); }
@@ -316,8 +319,10 @@ html:not([data-style="masculine"]) .stat[data-tone="calm"], html:not([data-style
   .topbar-title { font-size: 20px; }
 }
 /* Top bar stays on one line at laptop widths */
-.topbar-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; }
+/* The title is the only item that shrinks (it was overridden by the rule below, so long titles pushed the user chip off screen). */
 .topbar > * { flex-shrink: 0; }
+.topbar > .topbar-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; }
+
 @media (max-width: 1200px) {
   .backup-chip span, .user-chip .name, .user-chip .verified-word, .save-status .txt { display: none; }
   .save-status { min-width: auto; }
@@ -367,6 +372,8 @@ html:not([data-style="masculine"]) .stat[data-tone="calm"], html:not([data-style
 .stat .delta { font-size: 12px; margin-top: 8px; color: var(--ink-3); }
 .stat.ink { background: var(--ink); color: var(--paper); }
 .stat.ink .label, .stat.ink .delta { color: rgba(241,238,230,.7); }
+/* Dark mode inverts the ink card to a cream surface, so its small text must turn dark too. */
+html[data-theme="dark"] .stat.ink .label, html[data-theme="dark"] .stat.ink .delta { color: rgba(26,24,22,.72); }
 .stat.rose { background: var(--accent-soft); }
 
 /* Buttons: ink pills with tracked uppercase labels, like the board's editorial links */
@@ -882,7 +889,7 @@ html[data-motion="reduced"] .yt-link:hover { transform: none; }
 .welcome h1 { font-size: clamp(44px, 5.6vw, 76px); line-height: 1.02; letter-spacing: -0.01em; max-width: 12ch; }
 .welcome h1 i { font-style: italic; }
 .welcome h1 .script { display: block; font-size: .78em; color: var(--accent); margin-top: 6px; }
-.welcome-copy .sprig { position: absolute; left: 56px; bottom: 28px; width: 140px; }
+.welcome-copy .sprig { display: block; width: 140px; margin-top: 18px; } /* in the flow after the note, so it never sits on the text */
 .welcome-sub { margin-top: 22px; font-size: 16px; color: var(--ink-2); max-width: 44ch; line-height: 1.6; }
 .welcome-actions { display: flex; gap: 12px; margin-top: 34px; flex-wrap: wrap; }
 .welcome-note { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--rule-soft); font-size: 12px; color: var(--ink-3); max-width: 52ch; line-height: 1.55; }
@@ -1426,6 +1433,24 @@ html[data-help-tips="off"] .help-tip { display: none; }
 .hv-s-accent { stroke: var(--accent); }
 .hv-s-good { stroke: var(--sage-deep); }
 
+/* styles/print.css */
+/* Print (Ctrl/Cmd+P): the current page only, on light paper, without navigation or controls. */
+@media print {
+  @page { margin: 12mm; }
+  html, body { background: #fff !important; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .shell { display: block; min-height: 0; }
+  .sidebar, .tabbar, .fab, .gamify-strip, .gamify-chip, #overlays, .toasts, .topbar .save-status, .topbar .help-host,
+  .topbar .backup-chip, .topbar #quick-add, .topbar .user-chip, .topbar .month-nav .btn, .page-actions, .help-btn, .help-host, .yt-badge, .yt-link, .tour, .tour-card { display: none !important; }
+  .main { display: block; }
+  .topbar { position: static; height: auto; padding: 0 0 8px; border-bottom: 1px solid var(--rule); }
+  .page { padding: 16px 0 0 !important; max-width: none !important; }
+  .card, .stat, .fund-card, .acct-card, tr, .tx-row { break-inside: avoid; }
+  .card { box-shadow: none !important; }
+  html[data-theme="dark"] .stat.ink .label, html[data-theme="dark"] .stat.ink .delta { color: rgba(241,238,230,.7); }
+  * { animation: none !important; transition: none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -1613,6 +1638,11 @@ function formatDate(iso, fmt, opts = {}) {
   if (fmt === 'YMD') return y + '-' + m + '-' + d;
   return m + '/' + d + '/' + y;
 }
+/** "18:00" -> "6:00 PM" or "18:00", following the browser's own clock style (matches the time picker). */
+function formatTime(hhmm) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || ''); if (!m) return hhmm || '';
+  try { return new Date(2000, 0, 1, +m[1], +m[2]).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); } catch (e) { return hhmm; }
+}
 function relativeDay(iso, from) {
   from = from || todayISO(); const diff = daysBetween(from, iso);
   if (diff === 0) return 'Today'; if (diff === 1) return 'Tomorrow'; if (diff === -1) return 'Yesterday';
@@ -1620,7 +1650,7 @@ function relativeDay(iso, from) {
   return formatDate(iso, null, { style: 'medium' });
 }
 
-BP.Dates = { MONTHS, MONTHS_SHORT, DAYS, DAYS_SHORT, pad, todayISO, parseISO, isValidISO, toISO, daysInMonth, monthKey, monthKeyOf, parseMonthKey, addMonths, monthDiff, dayNum, fromDayNum, addDays, addMonthsISO, weekday, cmp, daysBetween, monthRange, monthLabel, weeksOfMonth, formatDate, relativeDay };
+BP.Dates = { MONTHS, MONTHS_SHORT, DAYS, DAYS_SHORT, pad, todayISO, parseISO, isValidISO, toISO, daysInMonth, monthKey, monthKeyOf, parseMonthKey, addMonths, monthDiff, dayNum, fromDayNum, addDays, addMonthsISO, weekday, cmp, daysBetween, monthRange, monthLabel, weeksOfMonth, formatDate, formatTime, relativeDay };
 
 /* ===== js/core/storage.js ===== */
 // Storage adapter for file:// . Primary: localStorage (synchronous, we can confirm the write).
@@ -1669,6 +1699,7 @@ async function idbClear() {
 
 const Storage = {
   hasLocalStorage: lsAvailable(),
+  KEY: LS_KEY,
   /** Ask the browser to keep this origin's data out of automatic eviction (matters on phones). Best effort. */
   async persist() {
     try { if (navigator.storage && navigator.storage.persist) return await navigator.storage.persist(); } catch (e) {}
@@ -1761,15 +1792,26 @@ function buildSampleData(state) {
   const D = BP.Dates, M = BP.Money; const f = M.factor(state.profile.currency);
   const money = (n) => Math.round(n * f);
   const today = D.todayISO(); const thisMonth = today.slice(0, 7);
-  const cat = (name) => state.categories.find((c) => c.name === name).id;
+  // Categories by name. A default the user renamed keeps its id; one that is gone is recreated as a Sample category
+  // (removed again with the sample data), so loading the sample never fails on a customised category list.
+  const defs = defaultCategories(); const extraCategories = [];
+  const cat = (name) => {
+    const lc = name.toLowerCase(); let c = state.categories.find((x) => String(x.name).toLowerCase() === lc);
+    const def = defs.find((x) => x.name === name);
+    if (!c && def) c = state.categories.find((x) => x.id === def.id);
+    if (!c) c = extraCategories.find((x) => x.name === name);
+    if (!c) { c = Object.assign({}, def || { name, group: 'expenses', bucket: 'wants', icon: 'dots', color: PALETTE[0] }, { id: 'smp_cat_' + extraCategories.length, archived: false, sample: true }); extraCategories.push(c); }
+    return c.id;
+  };
   const accounts = [
     { id: 'smp_acc_chk', name: 'Everyday Checking', type: 'checking', startingBalance: money(2450), color: PALETTE[4], sample: true },
     { id: 'smp_acc_sav', name: 'High-Yield Savings', type: 'savings', startingBalance: money(8200), color: PALETTE[2], sample: true },
-    { id: 'smp_acc_cc', name: 'Rewards Card', type: 'credit', startingBalance: money(-640), color: PALETTE[0], sample: true },
+    { id: 'smp_acc_cc', name: 'Rewards Card', type: 'credit', startingBalance: money(-2400), color: PALETTE[0], sample: true },
   ];
   const start = D.addMonths(thisMonth, -5);
   const recurring = [
-    { id: 'smp_rec_pay', name: 'Paycheck', kind: 'income', categoryId: cat('Paycheck'), accountId: 'smp_acc_chk', amount: money(2150), frequency: 'biweekly', startDate: D.addDays(D.monthRange(start).start, 4), endDate: null, active: true, sample: true },
+    // Paychecks follow the pay schedule in Settings, so the Paycheck view lines up with them.
+    ...paycheckRules(state.profile, Math.round(money(2150) * 26 / 12), D.monthRange(start).start).map((r, i) => Object.assign(r, { id: 'smp_rec_pay' + (i ? '_' + (i + 1) : ''), kind: 'income', categoryId: cat('Paycheck'), accountId: 'smp_acc_chk', endDate: null, active: true, sample: true })),
     { id: 'smp_rec_rent', name: 'Rent', kind: 'expense', categoryId: cat('Rent / Mortgage'), accountId: 'smp_acc_chk', amount: money(1450), frequency: 'monthly', startDate: D.monthRange(start).start, endDate: null, active: true, sample: true },
     { id: 'smp_rec_util', name: 'Electricity & Water', kind: 'expense', categoryId: cat('Utilities'), accountId: 'smp_acc_chk', amount: money(138), frequency: 'monthly', startDate: D.addDays(D.monthRange(start).start, 11), endDate: null, active: true, sample: true },
     { id: 'smp_rec_phone', name: 'Phone plan', kind: 'expense', categoryId: cat('Phone & Internet'), accountId: 'smp_acc_cc', amount: money(72), frequency: 'monthly', startDate: D.addDays(D.monthRange(start).start, 17), endDate: null, active: true, sample: true },
@@ -1777,7 +1819,7 @@ function buildSampleData(state) {
     { id: 'smp_rec_gym', name: 'Pilates studio', kind: 'expense', categoryId: cat('Gym & Wellness'), accountId: 'smp_acc_cc', amount: money(89), frequency: 'monthly', startDate: D.addDays(D.monthRange(start).start, 2), endDate: null, active: true, sample: true },
     { id: 'smp_rec_ins', name: 'Car insurance', kind: 'expense', categoryId: cat('Insurance'), accountId: 'smp_acc_chk', amount: money(96), frequency: 'monthly', startDate: D.addDays(D.monthRange(start).start, 20), endDate: null, active: true, sample: true },
     { id: 'smp_rec_loan', name: 'Student loan', kind: 'expense', categoryId: cat('Loan Payment'), accountId: 'smp_acc_chk', amount: money(210), frequency: 'monthly', startDate: D.addDays(D.monthRange(start).start, 14), endDate: null, active: true, sample: true },
-    { id: 'smp_rec_save', name: 'Savings transfer', kind: 'expense', categoryId: cat('Emergency Fund'), accountId: 'smp_acc_chk', amount: money(300), frequency: 'monthly', startDate: D.addDays(D.monthRange(start).start, 5), endDate: null, active: true, sample: true },
+    { id: 'smp_rec_save', name: 'Emergency fund', kind: 'expense', categoryId: cat('Emergency Fund'), accountId: 'smp_acc_chk', amount: money(300), frequency: 'monthly', startDate: D.addDays(D.monthRange(start).start, 5), endDate: null, active: true, sample: true },
   ];
   // Variable transactions: deterministic pseudo-random spread over past 5 months + current.
   let seed = 7; const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
@@ -1794,7 +1836,7 @@ function buildSampleData(state) {
         transactions.push({ id: 'smp_tx_' + (n++), date, amount: money(lo + rnd() * (hi - lo)), kind: 'expense', categoryId: cat(cname), accountId: rnd() > 0.5 ? 'smp_acc_cc' : 'smp_acc_chk', toAccountId: null, description: desc, notes: '', sample: true });
       }
     }
-    if (mi % 2 === 0) transactions.push({ id: 'smp_tx_' + (n++), date: D.addDays(r.start, 10), amount: money(180 + rnd() * 120), kind: 'income', categoryId: cat('Side Income'), accountId: 'smp_acc_chk', toAccountId: null, description: 'Etsy shop payout', notes: '', sample: true });
+    if (mi % 2 === 0) transactions.push({ id: 'smp_tx_' + (n++), date: D.addDays(r.start, 10), amount: money(180 + rnd() * 120), kind: 'income', categoryId: cat('Side Income'), accountId: 'smp_acc_chk', toAccountId: null, description: 'Side-gig payout', notes: '', sample: true });
   }
   // Paid states for past recurring occurrences create real transactions.
   const paymentStates = {}; const occ = BP.Recurring.occurrencesBetween(recurring, D.monthRange(start).start, today);
@@ -1803,6 +1845,18 @@ function buildSampleData(state) {
     const txId = 'smp_tx_' + (n++);
     paymentStates[o.key] = { paid: true, paidOn: o.date, transactionId: txId };
     transactions.push({ id: txId, date: o.date, amount: o.amount, kind: o.kind, categoryId: o.categoryId, accountId: o.accountId, toAccountId: null, description: o.name, notes: '', source: o.key, sample: true });
+  }
+  // The card is paid every month (on the 3rd, for last month's charges, plus the extra payment the sample debt logs)
+  // and the savings account earns interest, so Accounts, Debt and Net Worth tell one consistent story.
+  const ccSpend = (mk) => BP.sum(transactions.filter((t) => t.accountId === 'smp_acc_cc' && t.kind === 'expense' && t.date.slice(0, 7) === mk), (t) => t.amount);
+  const transfer = (date, amount, description) => transactions.push({ id: 'smp_tx_' + (n++), date, amount, kind: 'transfer', categoryId: null, accountId: 'smp_acc_chk', toAccountId: 'smp_acc_cc', description, notes: '', sample: true });
+  for (let mi = -5; mi <= -1; mi++) { const mk = D.addMonths(thisMonth, mi); const date = D.addMonths(mk, 1) + '-03'; if (date <= today) transfer(date, ccSpend(mk), 'Card payment'); }
+  transfer(D.addMonths(thisMonth, -1) + '-20', money(120), 'Rewards Card extra payment');
+  let saved = money(8200);
+  for (let mi = -5; mi <= 0; mi++) {
+    const date = D.addMonths(thisMonth, mi) + '-28'; if (date > today) continue;
+    const interest = Math.round((saved * 0.04) / 12); saved += interest;
+    transactions.push({ id: 'smp_tx_' + (n++), date, amount: interest, kind: 'income', categoryId: cat('Other Income'), accountId: 'smp_acc_sav', toAccountId: null, description: 'Savings interest', notes: '', sample: true });
   }
   const budgets = {}; const budgetDefaults = {};
   const plan = { 'Rent / Mortgage': 1450, 'Utilities': 150, 'Phone & Internet': 72, 'Insurance': 96, 'Streaming': 23, 'Software & Apps': 15, 'Gym & Wellness': 89, 'Groceries': 520, 'Dining Out': 160, 'Transport & Fuel': 130, 'Shopping': 150, 'Beauty & Self-care': 80, 'Health': 40, 'Gifts': 40, 'Travel': 100, 'Home & Garden': 50, 'Pets': 0, 'Education': 0, 'Other': 40, 'Emergency Fund': 300, 'Sinking Funds': 150, 'Investments': 100, 'Credit Card Payment': 0, 'Loan Payment': 210 };
@@ -1817,20 +1871,44 @@ function buildSampleData(state) {
     { id: 'smp_debt_2', name: 'Student loan', balance: money(9800), rate: 5.5, minimumPayment: money(210), startDate: start + '-01', payments: [], sample: true },
     { id: 'smp_debt_3', name: 'Car loan', balance: money(6200), rate: 7.2, minimumPayment: money(260), startDate: start + '-01', payments: [], sample: true },
   ];
+  const balanceOn = (accId, end) => { let b = accounts.find((a) => a.id === accId).startingBalance; for (const t of transactions) { if (t.date > end) continue; if (t.accountId === accId) b += t.kind === 'income' ? t.amount : -t.amount; else if (t.kind === 'transfer' && t.toAccountId === accId) b += t.amount; } return b; };
   const netWorth = { items: [
     { id: 'smp_nw_1', name: 'Everyday Checking', kind: 'asset', sample: true }, { id: 'smp_nw_2', name: 'High-Yield Savings', kind: 'asset', sample: true }, { id: 'smp_nw_3', name: 'Retirement account', kind: 'asset', sample: true },
     { id: 'smp_nw_4', name: 'Rewards Card', kind: 'liability', sample: true }, { id: 'smp_nw_5', name: 'Student loan', kind: 'liability', sample: true }, { id: 'smp_nw_6', name: 'Car loan', kind: 'liability', sample: true },
   ], snapshots: {} };
   for (let mi = -5; mi <= 0; mi++) {
     const mk = D.addMonths(thisMonth, mi); const g = 5 + mi;
-    netWorth.snapshots[mk] = { smp_nw_1: money(2100 + g * 90), smp_nw_2: money(7200 + g * 300), smp_nw_3: money(14200 + g * 420), smp_nw_4: money(3000 - g * 120), smp_nw_5: money(10800 - g * 200), smp_nw_6: money(7400 - g * 240) };
+    const end = D.monthRange(mk).end < today ? D.monthRange(mk).end : today;
+    // the three accounts use their real month-end balances, so "Fill from accounts" agrees with the history
+    netWorth.snapshots[mk] = { smp_nw_1: balanceOn('smp_acc_chk', end), smp_nw_2: balanceOn('smp_acc_sav', end), smp_nw_3: money(14200 + g * 420), smp_nw_4: -balanceOn('smp_acc_cc', end), smp_nw_5: money(10800 - g * 200), smp_nw_6: money(7400 - g * 240) };
   }
   const forecasts = [{ id: 'smp_fc_1', name: 'Index fund', initial: money(5000), monthly: money(250), annualReturn: 6, years: 20, sample: true }];
   const noSpend = { challenges: [{ id: 'smp_ns_1', name: 'No-spend ' + D.MONTHS[+thisMonth.slice(5, 7) - 1], startDate: D.monthRange(thisMonth).start, endDate: D.monthRange(thisMonth).end, estimatedDailySpend: money(28), sample: true }], markedDays: {} };
-  return { accounts, recurring, transactions, paymentStates, budgets, budgetDefaults, sinkingFunds, debts, netWorth, forecasts, noSpend };
+  return { accounts, recurring, transactions, paymentStates, budgets, budgetDefaults, sinkingFunds, debts, netWorth, forecasts, noSpend, categories: extraCategories };
+}
+/** Recurring paycheck rules for a pay schedule: [{name, frequency, startDate, amount}], first payday on or after `from`
+    (or the anchor itself when it is later). "Twice a month" becomes two monthly rules on the same days the Paycheck view
+    uses (the anchor day and 15 days from it), each half the monthly amount. Amounts are integer minor units. */
+function paycheckRules(profile, monthlyAmount, from) {
+  const D = BP.Dates, M = BP.Money; const freq = profile.paycheckFrequency;
+  const anchor = D.isValidISO(profile.paycheckAnchor) ? profile.paycheckAnchor : D.todayISO(); from = from || anchor;
+  if (freq === 'weekly' || freq === 'biweekly') {
+    const step = freq === 'weekly' ? 7 : 14; let d = anchor;
+    while (D.addDays(d, -step) >= from) d = D.addDays(d, -step);
+    while (d < from) d = D.addDays(d, step);
+    return [{ name: 'Paycheck', frequency: freq, startDate: d, amount: M.mul(monthlyAmount, freq === 'weekly' ? 12 / 52 : 12 / 26) }];
+  }
+  const ad = D.parseISO(anchor).d;
+  // first date on or after `from` that falls on day `dd` (in a month long enough, so the rule keeps that day)
+  const firstOn = (dd) => { let mk = from.slice(0, 7); for (let i = 0; i < 24; i++, mk = D.addMonths(mk, 1)) { const p = D.parseMonthKey(mk); if (dd > D.daysInMonth(p.y, p.m)) continue; const iso = D.toISO(p.y, p.m, dd); if (iso >= from) return iso; } return from; };
+  if (freq === 'semimonthly') {
+    const d1 = Math.min(ad, 28); const d2 = d1 <= 15 ? d1 + 15 : d1 - 15; const half = M.mul(monthlyAmount, 0.5);
+    return [{ name: 'Paycheck', frequency: 'monthly', startDate: firstOn(Math.min(d1, d2)), amount: half }, { name: 'Second paycheck', frequency: 'monthly', startDate: firstOn(Math.max(d1, d2)), amount: monthlyAmount - half }];
+  }
+  return [{ name: 'Paycheck', frequency: 'monthly', startDate: firstOn(ad), amount: monthlyAmount }];
 }
 
-BP.Defaults = { SCHEMA_VERSION, GROUPS, BUCKETS, PALETTE, ACCOUNT_TYPES, defaultState, defaultCategories, buildSampleData };
+BP.Defaults = { SCHEMA_VERSION, GROUPS, BUCKETS, PALETTE, ACCOUNT_TYPES, defaultState, defaultCategories, buildSampleData, paycheckRules };
 
 /* ===== js/core/store.js ===== */
 // Store: single state object, mutations through update(), autosave with verified status, pub/sub.
@@ -1869,10 +1947,30 @@ const store = {
   scheduleSave() {
     clearTimeout(saveTimer);
     this.setStatus('saving');
+    this.pendingSave = true;
     saveTimer = setTimeout(() => this.saveNow(), 350);
+  },
+  /** Write a pending change right away (tab hidden or closing). The localStorage write inside saveNow runs synchronously. */
+  flush() { if (this.pendingSave) { clearTimeout(saveTimer); this.saveNow(); } },
+  /** Another tab or window of this planner saved. Take its newer data so this tab never writes stale data over it. */
+  syncFromOtherTab(json) {
+    if (!this.ready) return;
+    if (json == null) { location.reload(); return; } // erased in the other tab
+    if (this.pendingSave) return; // our own change is about to save; the other tab picks it up the same way
+    let s; try { s = JSON.parse(json); } catch (e) { return; }
+    if (!s || typeof s !== 'object' || ((s.meta && s.meta.savedAt) || '') <= ((this.state.meta && this.state.meta.savedAt) || '')) return;
+    const structural = !!(s.profile && s.profile.setupComplete) !== !!this.state.profile.setupComplete || !!(s.prefs && s.prefs.pinHash) !== !!this.state.prefs.pinHash;
+    if (structural) { location.reload(); return; } // setup finished or the PIN lock changed elsewhere: start clean
+    this.state = migrate(s);
+    this.derivedCache.clear();
+    this.setStatus('saved');
+    if (!BP.Shell || !BP.Shell.mounted) return; // welcome or lock screen: data is current, nothing to redraw
+    listeners.forEach((l) => l(this.state, { replaced: true, external: true }));
+    if (document.visibilityState === 'visible' && BP.UI && BP.UI.toast) BP.UI.toast('Updated with changes made in another tab or window.', 'info');
   },
   async saveNow() {
     const seq = ++saveSeq;
+    this.pendingSave = false;
     this.state.meta.savedAt = new Date().toISOString();
     let json;
     try { json = JSON.stringify(this.state); } catch (e) { this.setStatus('error', 'Could not prepare data'); return false; }
@@ -2002,40 +2100,59 @@ function nextDate(rule, iso, n) {
 }
 /** All occurrences of the rules in [from, to] inclusive. Each: {key, ruleId, name, kind, date, amount, categoryId, accountId, rule} */
 /** Skipped occurrences are left out unless opts.includeSkipped (the Payments list shows them so they can be restored). */
+// An occurrence moved to another date (dateOverride) belongs where it now falls: a bill due Oct 31 that was moved
+// to Nov 2 shows in November, not October. Original dates are scanned in a widened window and kept by their shown
+// date; an override moved further than the window is picked up from paymentStates directly.
+const OVERRIDE_REACH = 62;
 function occurrencesBetween(rules, from, to, paymentStates, opts) {
-  const out = [];
+  const D = BP.Dates; const out = [];
+  const moved = new Map(); // ruleId -> original dates whose override lands in [from, to]
+  if (paymentStates) for (const k of Object.keys(paymentStates)) {
+    const st = paymentStates[k]; if (!st || !st.dateOverride || st.dateOverride < from || st.dateOverride > to) continue;
+    const i = k.lastIndexOf('|'); if (i < 0) continue;
+    const rid = k.slice(0, i); if (!moved.has(rid)) moved.set(rid, []); moved.get(rid).push(k.slice(i + 1));
+  }
+  const valid = D.isValidISO(from) && D.isValidISO(to);
+  const scanFrom = valid ? D.addDays(from, -OVERRIDE_REACH) : from, scanTo = valid ? D.addDays(to, OVERRIDE_REACH) : to;
   for (const rule of rules) {
     if (!rule || rule.active === false) continue;
-    if (!BP.Dates.isValidISO(rule.startDate)) continue;
-    const end = rule.endDate && rule.endDate < to ? rule.endDate : to;
-    if (rule.startDate > end) continue;
-    // jump close to `from`
-    let n = 0;
-    if (from > rule.startDate) {
-      const days = BP.Dates.daysBetween(rule.startDate, from);
-      if (rule.frequency === 'weekly') n = Math.max(0, Math.floor(days / 7) - 1);
-      else if (rule.frequency === 'biweekly') n = Math.max(0, Math.floor(days / 14) - 1);
-      else if (rule.frequency === 'monthly') n = Math.max(0, BP.Dates.monthDiff(rule.startDate.slice(0, 7), from.slice(0, 7)) - 1);
-      else if (rule.frequency === 'yearly') n = Math.max(0, Math.floor(BP.Dates.monthDiff(rule.startDate.slice(0, 7), from.slice(0, 7)) / 12) - 1);
-    }
-    for (let guard = 0; guard < 5000; guard++, n++) {
-      const d = nextDate(rule, null, n);
-      if (!d || d > end) break;
-      if (d < from) continue;
-      const key = rule.id + '|' + d;
-      const st = paymentStates && paymentStates[key];
-      if (st && st.skipped && !(opts && opts.includeSkipped)) continue;
-      out.push({
-        key, ruleId: rule.id, name: rule.name, kind: rule.kind, originalDate: d,
-        date: (st && st.dateOverride) || d,
-        amount: (st && st.amountOverride != null) ? st.amountOverride : rule.amount,
-        categoryId: rule.categoryId, accountId: (st && st.accountOverride) || rule.accountId,
-        paid: !!(st && st.paid), skipped: !!(st && st.skipped), paidOn: st && st.paidOn, transactionId: st && st.transactionId, rule,
-      });
-    }
+    if (!D.isValidISO(rule.startDate)) continue;
+    collect(rule, scanFrom, scanTo, from, to, paymentStates, opts, out);
+    for (const od of moved.get(rule.id) || []) if (D.isValidISO(od) && (od < scanFrom || od > scanTo)) collect(rule, od, od, from, to, paymentStates, opts, out);
   }
   out.sort((a, b) => BP.Dates.cmp(a.date, b.date) || a.name.localeCompare(b.name));
   return out;
+}
+/** Occurrences of one rule with an original date in [scanFrom, scanTo] and a shown date in [from, to]. */
+function collect(rule, scanFrom, scanTo, from, to, paymentStates, opts, out) {
+  const end = rule.endDate && rule.endDate < scanTo ? rule.endDate : scanTo;
+  if (rule.startDate > end) return;
+  // jump close to `scanFrom`
+  let n = 0;
+  if (scanFrom > rule.startDate) {
+    const days = BP.Dates.daysBetween(rule.startDate, scanFrom);
+    if (rule.frequency === 'weekly') n = Math.max(0, Math.floor(days / 7) - 1);
+    else if (rule.frequency === 'biweekly') n = Math.max(0, Math.floor(days / 14) - 1);
+    else if (rule.frequency === 'monthly') n = Math.max(0, BP.Dates.monthDiff(rule.startDate.slice(0, 7), scanFrom.slice(0, 7)) - 1);
+    else if (rule.frequency === 'yearly') n = Math.max(0, Math.floor(BP.Dates.monthDiff(rule.startDate.slice(0, 7), scanFrom.slice(0, 7)) / 12) - 1);
+  }
+  for (let guard = 0; guard < 5000; guard++, n++) {
+    const d = nextDate(rule, null, n);
+    if (!d || d > end) break;
+    if (d < scanFrom) continue;
+    const key = rule.id + '|' + d;
+    const st = paymentStates && paymentStates[key];
+    const date = (st && st.dateOverride) || d;
+    if (date < from || date > to) continue;
+    if (st && st.skipped && !(opts && opts.includeSkipped)) continue;
+    out.push({
+      key, ruleId: rule.id, name: rule.name, kind: rule.kind, originalDate: d,
+      date,
+      amount: (st && st.amountOverride != null) ? st.amountOverride : rule.amount,
+      categoryId: rule.categoryId, accountId: (st && st.accountOverride) || rule.accountId,
+      paid: !!(st && st.paid), skipped: !!(st && st.skipped), paidOn: st && st.paidOn, transactionId: st && st.transactionId, rule,
+    });
+  }
 }
 /** Does another active rule already cover this name+category+frequency+amount? */
 function findDuplicate(rules, candidate) {
@@ -2284,7 +2401,9 @@ function simulate(debts, settings, startMonth) {
   const D = BP.Dates; const M = BP.Money;
   const list = debts.map((d) => ({ id: d.id, name: d.name, balance: BP.Calc.debtCurrentBalance(d), rate: +d.rate || 0, min: d.minimumPayment || 0, interestPaid: 0, paidOff: null, schedule: [] })).filter((d) => d.balance > 0);
   const strategy = settings.strategy || 'avalanche'; const extra = settings.extraMonthly || 0;
-  const order = () => list.filter((d) => d.balance > 0).sort((a, b) => strategy === 'snowball' ? (a.balance - b.balance || b.rate - a.rate) : (b.rate - a.rate || a.balance - b.balance));
+  const cmp = (a, b) => strategy === 'snowball' ? (a.balance - b.balance || b.rate - a.rate) : (b.rate - a.rate || a.balance - b.balance);
+  const order = () => list.filter((d) => d.balance > 0).sort(cmp);
+  list.sort(cmp); // results come back in payoff order (the page numbers them 1, 2, 3)
   const monthsSeries = []; let month = startMonth || D.todayISO().slice(0, 7); let totalInterest = 0;
   let freed = 0; // minimums from paid-off debts roll forward
   const totalMin = BP.sum(list, (d) => d.min);
@@ -2827,6 +2946,7 @@ function fmt(minor, opts) { return BP.Money.format(minor, null, opts); }
 function fmtSigned(minor) { return BP.Money.format(minor, null, { sign: 'always' }); }
 function fdate(iso, opts) { return BP.Dates.formatDate(iso, null, opts); }
 function amountClass(minor) { return minor < 0 ? 'neg' : minor > 0 ? 'pos' : ''; }
+function plural(n, one, many) { return n + " " + (n === 1 ? one : (many || one + "s")); }
 function attr(v) { return BP.escapeHtml(v); }
 function option(value, label, selected) { return html`<option value="${value}" ${selected ? raw('selected') : ''}>${label}</option>`; }
 function options(list, selected, getValue = (x) => x.id, getLabel = (x) => x.name) { return list.map((x) => option(getValue(x), getLabel(x), getValue(x) === selected)); }
@@ -2839,7 +2959,7 @@ function setInvalid(form, name, msg) {
   input.addEventListener('input', () => field.classList.remove('invalid'), { once: true });
 }
 function clearInvalid(form) { form.querySelectorAll('.field.invalid').forEach((f) => f.classList.remove('invalid')); }
-Object.assign(BP, { html, raw, Raw, el, els, on, fmt, fmtSigned, fdate, amountClass, attr, option, options, focusFirst, readForm, setInvalid, clearInvalid });
+Object.assign(BP, { html, raw, Raw, el, els, on, fmt, fmtSigned, fdate, amountClass, attr, plural, option, options, focusFirst, readForm, setInvalid, clearInvalid });
 
 /* ===== js/ui/icons.js ===== */
 // Hand-drawn line icon set (24 viewBox, 2 stroke, round caps and joins). No emoji, no icon fonts.
@@ -2932,7 +3052,8 @@ const CHART_COLORS = ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(-
 function niceMax(v) {
   if (v <= 0) return 1;
   const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p;
-  const m = n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10;
+  // Steps that split into four even, short tick labels (a 5 top made ticks like $1.25K show as "$1.3K").
+  const m = n <= 1 ? 1 : n <= 2 ? 2 : n <= 4 ? 4 : n <= 6 ? 6 : n <= 8 ? 8 : 10;
   return m * p;
 }
 /** On phones a wide viewBox (600-900) shrinks the labels to ~5px. Draw phone charts at phone size instead,
@@ -2983,7 +3104,8 @@ function lineChart(data, opts = {}) {
     pts.forEach((p, i) => { paths += `<circle class="pt" style="--i:${i}" cx="${p[0]}" cy="${p[1]}" r="3" fill="${esc(color)}" data-tip="${esc(data.labels[i] + ' · ' + s.name + ': ' + BP.Money.format(s.values[i]))}"/>`; });
   });
   const step = Math.ceil(n / (phone ? 5 : 10));
-  const labels = data.labels.map((l, i) => (i % step === 0 && (i + step <= n - 1 || i === n - 1 || n - 1 - i >= step / 2)) || i === n - 1 ? `<text x="${xAt(i)}" y="${H - 8}" text-anchor="${i === n - 1 ? 'end' : i === 0 ? 'start' : 'middle'}">${esc(l)}</text>` : '').join('');
+  // A label sits on every step and on the last point; one closer than a full step to the last is dropped so they never overlap.
+  const labels = data.labels.map((l, i) => (i % step === 0 && i + step <= n - 1) || i === n - 1 ? `<text x="${xAt(i)}" y="${H - 8}" text-anchor="${i === n - 1 ? 'end' : i === 0 ? 'start' : 'middle'}">${esc(l)}</text>` : '').join('');
   return `<div class="chart-wrap"><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.label || 'Line chart')}">${g}<line class="axis" x1="${padL}" x2="${W - padR}" y1="${yAt(0)}" y2="${yAt(0)}"/>${paths}${labels}</svg></div>`;
 }
 /** Donut. items: [{name, value, color}] — stroke-based with staggered draw-in and hover glow. */
@@ -3127,6 +3249,8 @@ function confirmDialog({ title, message, confirmLabel = 'Confirm', danger = fals
 }
 let toastWrap = null;
 function toast(message, type = 'info', ms = 3200) {
+  // The tour card can sit where toasts appear (bottom right): hold them until the tour closes.
+  if (BP.Tutorial && BP.Tutorial.active) { setTimeout(() => toast(message, type, ms), 600); return; }
   if (!toastWrap) { toastWrap = document.createElement('div'); toastWrap.className = 'toasts'; toastWrap.setAttribute('aria-live', 'polite'); document.body.appendChild(toastWrap); }
   const t = document.createElement('div'); t.className = 'toast ' + type; t.textContent = message; toastWrap.appendChild(t);
   setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 300ms'; setTimeout(() => t.remove(), 320); }, ms);
@@ -3999,9 +4123,9 @@ const Gamify = {
       case 'transactions': return mk('tx', 'Log a transaction', { go: 'quick-add' });
       case 'payments': return mk('paid', 'Mark a bill paid or income received');
       case 'calendar': case 'paycheck': return mk('paid', 'Mark a bill paid', { go: 'payments' });
-      case 'nospend': return mk('nospend', s.noSpend.challenges.some(notSample) ? 'Mark a no-spend day' : 'Start a challenge, then mark no-spend days');
+      case 'nospend': return mk('nospend', s.noSpend.challenges.some(notSample) ? 'Mark a no-spend day' : s.noSpend.challenges.length ? 'Start your own challenge, then mark no-spend days' : 'Start a challenge, then mark no-spend days');
       case 'monthly': { const planned = BP.Calc.budgetSummary(s, month).planned > 0; return mk('budget', planned ? 'This month is planned' : 'Plan this month\'s budget', planned ? { done: true, stateDone: true } : {}); }
-      case 'sinking': return s.sinkingFunds.some(notSample) ? mk('contrib', 'Add a contribution to a fund') : mk('fund', 'Create your first sinking fund');
+      case 'sinking': return s.sinkingFunds.some(notSample) ? mk('contrib', 'Add a contribution to a fund') : mk('fund', s.sinkingFunds.length ? 'Create a sinking fund of your own' : 'Create your first sinking fund'); // sample funds earn no points
       case 'debt': return mk('debt', 'Record a debt payment');
       case 'networth': { const has = !!(s.netWorth.snapshots || {})[month]; return mk('nw', has ? 'Net worth updated this month' : 'Update this month\'s net worth', has ? { done: true, stateDone: true } : {}); }
       case 'accounts': return mk('account', 'Add an account');
@@ -4039,7 +4163,7 @@ const Gamify = {
     const due = BP.Calc.upcomingPayments(s, today, 7).some((o) => !o.paid);
     if (due || s.recurring.length) tasks.push({ id: 'paid', label: due ? 'Mark a bill as paid' : 'Check your bills', go: 'payments' });
     const hasCh = s.noSpend.challenges.some(notSample);
-    tasks.push({ id: 'nospend', label: hasCh ? 'Mark a no-spend day' : 'Start a no-spend challenge', go: 'nospend' });
+    tasks.push({ id: 'nospend', label: hasCh ? 'Mark a no-spend day' : s.noSpend.challenges.length ? 'Start your own no-spend challenge' : 'Start a no-spend challenge', go: 'nospend' });
     const planned = BP.Calc.budgetSummary(s, month).planned > 0; // same test as the Monthly page and its strip
     if (!planned) tasks.push({ id: 'budget', label: 'Plan this month\'s budget', go: 'monthly' });
     const backupFresh = s.prefs.lastBackupAt && BP.Dates.addDays(s.prefs.lastBackupAt.slice(0, 10), 7) >= today;
@@ -4200,7 +4324,8 @@ const Shell = {
     this.fin = this.financeSnapshot();
     this.unsub = BP.store.subscribe((state, opts) => {
       opts = opts || {};
-      if (!opts.gamif) BP.Gamify.check({ replaced: !!opts.replaced });
+      // Data adopted from another tab already carries that tab's points; checking again here could make the tabs save back and forth.
+      if (opts.external) BP.Gamify.renderChip(); else if (!opts.gamif) BP.Gamify.check({ replaced: !!opts.replaced });
       this.updateChrome(); if (!opts.noRender) this.renderPage(true);
       if (opts.meaningful !== false && !opts.replaced && !opts.gamif) this.checkFinanceWin(); else if (!opts.gamif) this.fin = this.financeSnapshot();
     });
@@ -4306,8 +4431,8 @@ const Welcome = {
               <input type="file" id="w-file" accept=".json,application/json" class="hidden">
             </div>
             ${BP.Tutorials.url('01') ? BP.html`<div class="welcome-videos">${BP.Tutorials.link(BP.Tutorials.forPage('welcome'), { text: 'How setup works', cls: 'quiet' })}</div>` : ''}
-            <img class="sprig" src="${BP.img('SPRIG')}" alt="" aria-hidden="true">
             <p class="welcome-note">Your financial information stays on this device. This planner does not send your data anywhere. You control your backups and can export your information at any time.</p>
+            <img class="sprig" src="${BP.img('SPRIG')}" alt="" aria-hidden="true">
           </section>
           <section class="welcome-art" aria-hidden="true">
             <div class="meta">No. 01<br>Personal finance<br>Edition</div>
@@ -4537,13 +4662,13 @@ const Setup = {
         </div>`;
       }
       case 4: return BP.html`<h2>Your <i>starting</i> point</h2><p class="lead">All optional. Add what you know now; the rest can wait.</p>
-        <div class="field"><label for="monthlyIncome">Monthly take-home income</label><div class="input-wrap"><span class="prefix">${M.symbol(d.currency)}</span><input class="input has-prefix" id="monthlyIncome" name="monthlyIncome" inputmode="decimal" value="${d.monthlyIncome}" placeholder="0.00"></div><span class="hint">Creates a monthly Paycheck entry you can edit.</span><span class="error-msg">Enter a number like 3200 or 3,200.50</span></div>
+        <div class="field"><label for="monthlyIncome">Monthly take-home income</label><div class="input-wrap"><span class="prefix">${M.symbol(d.currency)}</span><input class="input has-prefix" id="monthlyIncome" name="monthlyIncome" inputmode="decimal" value="${d.monthlyIncome}" placeholder="0.00"></div><span class="hint">Creates Paycheck entries on your pay schedule. You can edit them later.</span><span class="error-msg">Enter a number like 3200 or 3,200.50</span></div>
         <div class="field"><label>Bank accounts and starting balances</label><div class="mini-list">${d.accounts.map((a, i) => BP.html`<div class="mini-row"><input class="input" name="acc_name_${i}" placeholder="Account name" value="${a.name}"><select class="select" name="acc_type_${i}">${BP.Defaults.ACCOUNT_TYPES.map((t) => BP.option(t.id, t.name, t.id === a.type))}</select><input class="input" name="acc_bal_${i}" inputmode="decimal" placeholder="Balance" value="${a.balance}"><button type="button" class="btn icon sm plain" data-remove-account="${i}" aria-label="Remove">${BP.icon('close')}</button></div>`)}</div><span class="error-msg">Enter a valid amount</span><button type="button" class="btn ghost sm" data-add-account style="align-self:flex-start">${BP.icon('plus')} Add account</button></div>
         <div class="field"><label>Debts</label>${d.debts.length ? BP.html`<div class="mini-list">${d.debts.map((x, i) => BP.html`<div class="mini-row" style="grid-template-columns:1fr 110px 80px 110px 36px"><input class="input" name="debt_name_${i}" placeholder="Debt name" value="${x.name}"><input class="input" name="debt_bal_${i}" inputmode="decimal" placeholder="Balance" value="${x.balance}"><input class="input" name="debt_rate_${i}" inputmode="decimal" placeholder="APR %" value="${x.rate}"><input class="input" name="debt_min_${i}" inputmode="decimal" placeholder="Min. payment" value="${x.min}"><button type="button" class="btn icon sm plain" data-remove-debt="${i}" aria-label="Remove">${BP.icon('close')}</button></div>`)}</div>` : ''}<span class="error-msg">Check the debt details</span><button type="button" class="btn ghost sm" data-add-debt style="align-self:flex-start">${BP.icon('plus')} Add a debt</button></div>
         <div class="field"><label>Starting categories</label><span class="hint">Tap to turn categories off. You can add your own later.</span><div class="cat-chips">${BP.store.state.categories.filter((c) => c.group !== 'income').map((c) => BP.html`<button type="button" class="cat-chip ${d.categories.has(c.id) ? 'active' : ''}" data-cat="${c.id}"><span class="swatch" style="background:${c.color}"></span>${c.name}</button>`)}</div></div>`;
       case 5: return BP.html`<h2 data-help="storage">Keep your data <i>safe</i></h2><p class="lead">Your planner saves automatically in this browser, on this device. A backup file is the only copy you can move or restore. Choose how often we should remind you.</p>
         <div class="form-grid">
-          <div class="field"><label>Backup reminder</label>${choice('rem_frequency', [['off', 'Off'], ['daily', 'Daily'], ['weekly', 'Weekly']], d.reminder.frequency)}</div>
+          <div class="field full"><label>Backup reminder</label>${choice('rem_frequency', [['off', 'Off'], ['daily', 'Daily'], ['weekly', 'Weekly']], d.reminder.frequency)}</div>
           <div class="field"><label for="rem_day">Day</label><select class="select" id="rem_day" name="rem_day">${D.DAYS.map((n, i) => BP.option(i, n, i === d.reminder.day))}</select><span class="hint">Weekly reminders only</span></div>
           <div class="field"><label for="rem_time">Time</label><input class="input" type="time" id="rem_time" name="rem_time" value="${d.reminder.time}"></div>
           <div class="field full"><label class="checkbox"><input type="checkbox" name="loadSample" ${d.loadSample ? 'checked' : ''}> Load sample data so I can explore first (clearly labelled, removable in one click)</label></div>
@@ -4558,7 +4683,7 @@ const Setup = {
           <div><div class="k">Budget starts</div><div class="v">${D.monthLabel(d.budgetStartMonth)}</div></div>
           <div><div class="k">Paychecks</div><div class="v">${{ weekly: 'Weekly', biweekly: 'Every 2 weeks', semimonthly: 'Twice a month', monthly: 'Monthly' }[d.paycheckFrequency]}</div></div>
           <div><div class="k">Accounts</div><div class="v">${accs.length ? accs.map((a) => a.name).join(', ') : 'None yet'}</div></div>
-          <div><div class="k">Backup reminder</div><div class="v">${d.reminder.frequency === 'off' ? 'Off' : d.reminder.frequency === 'daily' ? 'Daily at ' + d.reminder.time : D.DAYS[d.reminder.day] + 's at ' + d.reminder.time}</div></div>
+          <div><div class="k">Backup reminder</div><div class="v">${d.reminder.frequency === 'off' ? 'Off' : d.reminder.frequency === 'daily' ? 'Daily at ' + D.formatTime(d.reminder.time) : D.DAYS[d.reminder.day] + 's at ' + D.formatTime(d.reminder.time)}</div></div>
         </div>`;
       }
     }
@@ -4582,7 +4707,7 @@ const Setup = {
     if (this.step === 4) {
       if (d.monthlyIncome && BP.Money.parse(d.monthlyIncome, d.currency) == null) { BP.setInvalid(form, 'monthlyIncome', 'Enter a number like 3200 or 3,200.50'); return; }
       for (let i = 0; i < d.accounts.length; i++) { const a = d.accounts[i]; if (a.name.trim() && a.balance && BP.Money.parse(a.balance, d.currency) == null) { BP.setInvalid(form, 'acc_bal_' + i, 'Enter a valid amount'); return; } }
-      for (let i = 0; i < d.debts.length; i++) { const x = d.debts[i]; if (x.name.trim()) { if (BP.Money.parse(x.balance, d.currency) == null) { BP.setInvalid(form, 'debt_bal_' + i, 'Enter the balance'); return; } if (x.rate && isNaN(parseFloat(x.rate))) { BP.setInvalid(form, 'debt_rate_' + i, 'Enter a rate like 19.99'); return; } } }
+      for (let i = 0; i < d.debts.length; i++) { const x = d.debts[i]; if (x.name.trim()) { if (BP.Money.parse(x.balance, d.currency) == null) { BP.setInvalid(form, 'debt_bal_' + i, 'Enter the balance'); return; } const bal = BP.Money.parse(x.balance, d.currency); if (bal <= 0) { BP.setInvalid(form, 'debt_bal_' + i, 'Enter a balance greater than zero'); return; } const rate = x.rate ? +String(x.rate).replace('%', '').trim() : 0; if (!Number.isFinite(rate) || rate < 0 || rate > 100) { BP.setInvalid(form, 'debt_rate_' + i, 'Enter a rate between 0 and 100, like 19.99'); return; } if (x.min && !(BP.Money.parse(x.min, d.currency) >= 0)) { BP.setInvalid(form, 'debt_min_' + i, 'Enter a valid amount'); return; } } }
     }
     if (this.step === this.total + 1) return this.finish();
     this.step++; this.render();
@@ -4597,10 +4722,7 @@ const Setup = {
       const income = d.monthlyIncome ? M.parse(d.monthlyIncome, d.currency) : null;
       if (income && income > 0) {
         const payCat = s.categories.find((c) => c.group === 'income'); const acc = s.accounts[0];
-        const per = { weekly: 52 / 12, biweekly: 26 / 12, semimonthly: 2, monthly: 1 }[d.paycheckFrequency] || 1;
-        const freq = d.paycheckFrequency === 'semimonthly' ? 'monthly' : d.paycheckFrequency;
-        const amount = M.mul(income, 1 / (d.paycheckFrequency === 'semimonthly' ? 1 : per));
-        s.recurring.push({ id: BP.uid('rec'), name: 'Paycheck', kind: 'income', categoryId: payCat.id, accountId: acc ? acc.id : null, amount, frequency: freq, startDate: d.paycheckAnchor, endDate: null, active: true });
+        for (const r of BP.Defaults.paycheckRules({ paycheckFrequency: d.paycheckFrequency, paycheckAnchor: d.paycheckAnchor }, income, d.paycheckAnchor)) s.recurring.push(Object.assign(r, { id: BP.uid('rec'), kind: 'income', categoryId: payCat.id, accountId: acc ? acc.id : null, endDate: null, active: true }));
       }
       for (const x of d.debts) if (x.name.trim()) s.debts.push({ id: BP.uid('debt'), name: x.name.trim(), balance: M.parse(x.balance, d.currency) || 0, rate: parseFloat(x.rate) || 0, minimumPayment: M.parse(x.min || '0', d.currency) || 0, startDate: today, payments: [] });
       if (d.loadSample || (typeof DEMO_MODE !== 'undefined' && DEMO_MODE)) BP.SettingsPage.applySample(s);
@@ -4660,7 +4782,14 @@ const Tutorial = {
     let t = document.querySelector(step.target);
     if ((!t || !t.getClientRects().length || !t.offsetWidth) && step.alt) t = document.querySelector(step.alt); // phone layout: the Add button is the floating one
     this.target = t;
-    if (t && !quiet) { t.scrollIntoView({ block: 'center', behavior: 'instant' in window ? 'instant' : 'auto' }); }
+    const bar = document.querySelector('.topbar'); const barBottom = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
+    if (t && !quiet) {
+      // A section taller than the screen is shown from its top (under the top bar), not from its middle.
+      const tall = t.getBoundingClientRect().height > window.innerHeight * 0.55;
+      if (tall) t.style.scrollMarginTop = barBottom + 16 + 'px';
+      t.scrollIntoView({ block: tall ? 'start' : 'center', behavior: 'instant' in window ? 'instant' : 'auto' });
+      if (tall) t.style.scrollMarginTop = '';
+    }
     const r = t ? t.getBoundingClientRect() : { left: window.innerWidth / 2 - 100, top: window.innerHeight / 2 - 40, width: 200, height: 80, bottom: window.innerHeight / 2 + 40 };
     const pad = 8;
     if (!this.overlay) {
@@ -4693,7 +4822,13 @@ const Tutorial = {
     // position: below target when room, else above; keep inside viewport
     const cw = Math.min(330, window.innerWidth - 24); card.style.width = cw + 'px';
     const chh = card.offsetHeight || 220; let cx = Math.min(Math.max(12, r.left), window.innerWidth - cw - 12); let cy = r.bottom + 16;
-    if (cy + chh > window.innerHeight - 12) cy = Math.max(12, r.top - chh - 16);
+    if (cy + chh > window.innerHeight - 12) cy = r.top - chh - 16;
+    const minTop = r.top >= barBottom ? barBottom + 12 : 12; // stay off the top bar unless the stop is in it
+    if (cy < minTop) {
+      // No room above or below (a tall section): bottom-right corner, clear of the section's heading and the phone tab bar.
+      const tabbar = document.querySelector('.tabbar'); const tb = tabbar && tabbar.offsetHeight && getComputedStyle(tabbar).display !== 'none' ? tabbar.offsetHeight : 0;
+      cx = window.innerWidth - cw - 12; cy = Math.max(minTop, window.innerHeight - tb - chh - 12);
+    }
     if (!t) { cx = window.innerWidth / 2 - cw / 2; cy = window.innerHeight / 2 - chh / 2; }
     card.style.left = cx + 'px'; card.style.top = cy + 'px';
     if (!quiet) { const n = card.querySelector('[data-next]'); if (n) n.focus({ preventScroll: true }); }
@@ -4779,7 +4914,7 @@ const QuickAdd = {
       <input type="hidden" name="kind" value="${k}">
       <div class="field"><label for="qa-amount">Amount</label><div class="input-wrap lg"><span class="prefix">${M.symbol(s.profile.currency)}</span><input class="input lg has-prefix" id="qa-amount" name="amount" inputmode="decimal" autocomplete="off" placeholder="0.00" value="${defaults.amount}"></div><span class="error-msg">Enter an amount greater than zero</span></div>
       <div class="form-grid">
-        <div class="field full"><label for="qa-desc">${k === 'transfer' ? 'Note' : 'Description'}</label><input class="input" id="qa-desc" name="description" maxlength="80" placeholder="${k === 'income' ? 'e.g. Paycheck' : k === 'transfer' ? 'e.g. To savings' : 'e.g. Groceries at Trader Joe\'s'}" value="${defaults.description}"></div>
+        <div class="field full"><label for="qa-desc">${k === 'transfer' ? 'Note' : 'Description'}</label><input class="input" id="qa-desc" name="description" maxlength="80" placeholder="${k === 'income' ? 'e.g. Paycheck' : k === 'transfer' ? 'e.g. To savings' : 'e.g. Weekly groceries'}" value="${defaults.description}"></div>
         <div class="field"><label for="qa-date">Date</label><input class="input" type="date" id="qa-date" name="date" value="${defaults.date}"><span class="error-msg">Pick a valid date</span></div>
         ${k !== 'transfer' ? BP.html`<div class="field"><label>Category</label>${BP.UI.categorySelect('categoryId', defaults.categoryId, { includeIncome: k === 'income', includeExpense: k === 'expense' })}</div>` : ''}
         <div class="field"><label>${k === 'transfer' ? 'From account' : 'Account'}</label>${BP.UI.accountSelect('accountId', defaults.accountId)}</div>
@@ -5025,7 +5160,7 @@ BP.Router.register('dashboard', {
     page.innerHTML = BP.html`
       <div class="greeting">
         <div class="who">${s.profile.avatar ? BP.UI.avatarVerifiedHtml(s.profile, 'lg') : ''}<div><div class="kicker">${D.monthLabel(key)}</div><h1>${greet},<span class="script">${s.profile.name || 'friend'}</span></h1></div></div>
-        <div class="meta">Last backup: ${lastBackup}<br>${s.accounts.length} account${s.accounts.length === 1 ? '' : 's'} · ${s.transactions.length} transactions</div>
+        <div class="meta">Last backup: ${lastBackup}<br>${s.accounts.length} account${s.accounts.length === 1 ? '' : 's'} · ${BP.plural(s.transactions.length, 'transaction')}</div>
       </div>
       ${!hasAny ? BP.html`<div class="card mb-16">${BP.UI.emptyState({ action: 'quick-add' })}<div class="center" style="margin-top:-18px;padding-bottom:12px"><button class="btn ghost sm" data-action="sample">Or load sample data to explore</button></div></div>` : ''}
       ${BP.raw(BP.Gamify.dashboardCard(s))}
@@ -5103,7 +5238,7 @@ BP.Router.register('calendar', {
     page.innerHTML = BP.html`
       <div class="page-head"><div><div class="kicker">${D.monthLabel(key)}</div><h1 data-help="calendar">Bills, paydays and <i class="ital">everything</i> in between</h1></div>
         <div class="legend"><span><span class="swatch" style="background:var(--sage-deep)"></span>Income</span><span><span class="swatch" style="background:var(--ink)"></span>Bills</span><span><span class="swatch" style="background:var(--lavender)"></span>Subscriptions</span><span><span class="swatch" style="background:var(--rose)"></span>Debt</span><span><span class="swatch" style="background:var(--gold)"></span>Other</span></div></div>
-      <div class="ledger cols-3 mb-16"><div class="stat" data-tone="out"><div class="label">Bills due this month</div><div class="value">${BP.fmt(dueTotal)}</div><div class="delta">${BP.fmt(paidTotal)} paid so far</div></div><div class="stat" data-tone="in"><div class="label">Income expected</div><div class="value">${BP.fmt(incTotal)}</div><div class="delta">${occ.filter((o) => o.kind === 'income').length} paydays</div></div><div class="stat" data-tone="out"><div class="label">Still to pay</div><div class="value">${BP.fmt(dueTotal - paidTotal)}</div><div class="delta">${occ.filter((o) => o.kind === 'expense' && !o.paid).length} items open</div></div></div>
+      <div class="ledger cols-3 mb-16"><div class="stat" data-tone="out"><div class="label">Bills due this month</div><div class="value">${BP.fmt(dueTotal)}</div><div class="delta">${BP.fmt(paidTotal)} paid so far</div></div><div class="stat" data-tone="in"><div class="label">Income expected</div><div class="value">${BP.fmt(incTotal)}</div><div class="delta">${BP.plural(occ.filter((o) => o.kind === 'income').length, 'payday')}</div></div><div class="stat" data-tone="out"><div class="label">Still to pay</div><div class="value">${BP.fmt(dueTotal - paidTotal)}</div><div class="delta">${BP.plural(occ.filter((o) => o.kind === 'expense' && !o.paid).length, 'item')} open</div></div></div>
       <div class="cal-layout">
         <div class="card flush" data-tour="calendar-grid"><div class="cal-grid">${heads.map((h) => BP.html`<div class="cal-head">${h}</div>`)}${BP.raw(cells)}</div>
           ${!s.recurring.length ? BP.html`<div style="padding:16px 18px">${BP.UI.emptyState({ title: 'Your calendar is clear', text: 'Add recurring bills and paydays so they appear here automatically.', action: 'go-payments', actionLabel: 'Set up payments', small: true })}</div>` : ''}</div>
@@ -5133,13 +5268,16 @@ BP.Router.register('annual', {
     const startKey = ctx.params.start || s.profile.budgetStartMonth || D.todayISO().slice(0, 7);
     const a = C.annual(s, startKey); const endKey = D.addMonths(startKey, 11);
     const label = (k) => D.monthLabel(k, true);
+    // Averages divide by the months of this budget year that have started, not by 12 (a new year is mostly future months).
+    const thisKey = D.todayISO().slice(0, 7); const monthsIn = startKey > thisKey ? 12 : Math.min(12, D.monthDiff(startKey, thisKey) + 1);
+    const perMonth = (v) => BP.fmt(Math.round(v / monthsIn)) + ' per month' + (monthsIn < 12 ? ' · ' + monthsIn + ' month' + (monthsIn === 1 ? '' : 's') + ' so far' : '');
     const saveRate = a.year.income ? Math.round(((a.year.income - a.year.expense) / a.year.income) * 100) : 0;
     page.innerHTML = BP.html`
       <div class="page-head"><div><div class="kicker">Budget year</div><h1>${label(startKey)} to ${label(endKey)}</h1><p class="page-sub">Twelve months from your budget start. Change the start month in Settings or step through years here.</p></div>
         <div class="page-actions"><button class="btn icon" data-year="-12" aria-label="Previous year">${BP.icon('chevronLeft')}</button><button class="btn secondary sm" data-year="0">This year</button><button class="btn icon" data-year="12" aria-label="Next year">${BP.icon('chevronRight')}</button></div></div>
       <div class="ledger cols-4 mb-16">
-        <div class="stat" data-tone="in"><div class="label">Income</div><div class="value">${BP.fmt(a.year.income)}</div><div class="delta">${BP.fmt(Math.round(a.year.income / 12))} per month</div></div>
-        <div class="stat" data-tone="out"><div class="label">Expenses</div><div class="value">${BP.fmt(a.year.expense)}</div><div class="delta">${BP.fmt(Math.round(a.year.expense / 12))} per month</div></div>
+        <div class="stat" data-tone="in"><div class="label">Income</div><div class="value">${BP.fmt(a.year.income)}</div><div class="delta">${perMonth(a.year.income)}</div></div>
+        <div class="stat" data-tone="out"><div class="label">Expenses</div><div class="value">${BP.fmt(a.year.expense)}</div><div class="delta">${perMonth(a.year.expense)}</div></div>
         <div class="stat" data-tone="save"><div class="label">Saved toward goals</div><div class="value">${BP.fmt(a.year.savings)}</div><div class="delta">Savings categories</div></div>
         <div class="stat ink"><div class="label">Net</div><div class="value">${BP.fmt(a.year.net)}</div><div class="delta">${saveRate}% of income kept</div></div>
       </div>
@@ -5288,8 +5426,8 @@ BP.Router.register('accounts', {
     const transfers = s.transactions.filter((t) => t.kind === 'transfer').sort((a, b) => D.cmp(b.date, a.date)).slice(0, 8);
     page.innerHTML = BP.html`
       <div class="page-head"><div><div class="kicker">Where your money sits</div><h1 data-help="accounts">Accounts</h1></div><div class="page-actions"><button class="btn secondary" data-transfer>${BP.icon('transfer')} Transfer</button><button class="btn primary" data-add>${BP.icon('plus')} Add account</button></div></div>
-      <div class="ledger cols-3 mb-16"><div class="stat" data-tone="in"><div class="label">Cash and savings</div><div class="value">${BP.fmt(cash)}</div><div class="delta">${accs.filter((a) => a.type !== 'credit').length} accounts</div></div><div class="stat" data-tone="out"><div class="label">Credit card balances</div><div class="value">${BP.fmt(owed)}</div><div class="delta">owed</div></div><div class="stat ink"><div class="label">Net cash position</div><div class="value">${BP.fmt(cash - owed)}</div><div class="delta">Balances update from transactions</div></div></div>
-      ${accs.length ? BP.html`<div class="ledger cols-3 mb-16">${accs.map((a) => { const b = bal(a); const type = BP.Defaults.ACCOUNT_TYPES.find((t) => t.id === a.type); const n = s.transactions.filter((t) => t.accountId === a.id || t.toAccountId === a.id).length; return BP.html`<div class="acct-card" data-acc="${a.id}"><span class="stripe" style="background:${a.color}"></span><span class="type">${type ? type.name : a.type}${a.sample ? ' · Sample' : ''}</span><span class="nm">${a.name}</span><button class="btn icon sm plain menu-btn" data-menu="${a.id}" aria-label="Account actions">${BP.icon('more')}</button><span class="bal ${a.type === 'credit' && b < 0 ? 'neg' : ''}">${a.type === 'credit' ? BP.fmt(Math.abs(b)) : BP.fmt(b)}</span><span class="muted" style="font-size:12px">${a.type === 'credit' ? (b < 0 ? 'owed' : 'credit') : 'available'} · ${n} transactions</span></div>`; })}</div>` : BP.html`<div class="card mb-16">${BP.UI.emptyState({ title: 'Add your first account', text: 'Checking, savings, cash or a credit card. Balances update automatically from your transactions.', action: 'add', actionLabel: 'Add account' })}</div>`}
+      <div class="ledger cols-3 mb-16"><div class="stat" data-tone="in"><div class="label">Cash and savings</div><div class="value">${BP.fmt(cash)}</div><div class="delta">${BP.plural(accs.filter((a) => a.type !== 'credit').length, 'account')}</div></div><div class="stat" data-tone="out"><div class="label">Credit card balances</div><div class="value">${BP.fmt(owed)}</div><div class="delta">owed</div></div><div class="stat ink"><div class="label">Net cash position</div><div class="value">${BP.fmt(cash - owed)}</div><div class="delta">Balances update from transactions</div></div></div>
+      ${accs.length ? BP.html`<div class="ledger cols-3 mb-16">${accs.map((a) => { const b = bal(a); const type = BP.Defaults.ACCOUNT_TYPES.find((t) => t.id === a.type); const n = s.transactions.filter((t) => t.accountId === a.id || t.toAccountId === a.id).length; return BP.html`<div class="acct-card" data-acc="${a.id}"><span class="stripe" style="background:${a.color}"></span><span class="type">${type ? type.name : a.type}${a.sample ? ' · Sample' : ''}</span><span class="nm">${a.name}</span><button class="btn icon sm plain menu-btn" data-menu="${a.id}" aria-label="Account actions">${BP.icon('more')}</button><span class="bal ${a.type === 'credit' && b < 0 ? 'neg' : ''}">${a.type === 'credit' ? BP.fmt(Math.abs(b)) : BP.fmt(b)}</span><span class="muted" style="font-size:12px">${a.type === 'credit' ? (b < 0 ? 'owed' : 'credit') : 'available'} · ${BP.plural(n, 'transaction')}</span></div>`; })}</div>` : BP.html`<div class="card mb-16">${BP.UI.emptyState({ title: 'Add your first account', text: 'Checking, savings, cash or a credit card. Balances update automatically from your transactions.', action: 'add', actionLabel: 'Add account' })}</div>`}
       <div class="card"><div class="card-head"><h3 data-help="transfers">Recent transfers</h3><span class="card-title-sub">Transfers are not income or expenses</span></div>${transfers.length ? BP.html`<div class="list">${transfers.map((t) => BP.html`<div class="list-item clickable" data-tx="${t.id}"><div class="grow"><div class="title">${(BP.store.account(t.accountId) || {}).name || '?'} ${BP.arrow()} ${(BP.store.account(t.toAccountId) || {}).name || '?'}</div><div class="sub">${D.formatDate(t.date, null, { style: 'long' })}${t.description ? ' · ' + t.description : ''}</div></div><span class="amount">${BP.fmt(t.amount)}</span></div>`)}</div>` : BP.html`<p class="muted">No transfers yet. Use Transfer to move money between accounts, for example to savings or to pay a card.</p>`}</div>`;
     page.addEventListener('click', (e) => {
       if (e.target.closest('[data-add]') || (e.target.closest('[data-action]') && e.target.closest('[data-action]').dataset.action === 'add')) return AccountsPage.edit(null);
@@ -5330,7 +5468,7 @@ const PaymentsPage = {
       body: BP.html`<form id="rule-form" novalidate class="stack" style="gap:14px">
         <div class="segmented block" data-kind-group><button type="button" data-k="expense" class="${kind === 'expense' ? 'active' : ''}">Bill / Subscription</button><button type="button" data-k="income" class="${kind === 'income' ? 'active' : ''}">Income</button></div><input type="hidden" name="kind" value="${kind}">
         <div class="form-grid">
-          <div class="field full"><label for="r-name">Name</label><input class="input" id="r-name" name="name" maxlength="60" value="${rule ? rule.name : ''}" placeholder="${kind === 'income' ? 'e.g. Paycheck' : 'e.g. Rent, Netflix, Car insurance'}"><span class="error-msg">Please enter a name</span></div>
+          <div class="field full"><label for="r-name">Name</label><input class="input" id="r-name" name="name" maxlength="60" value="${rule ? rule.name : ''}" placeholder="${kind === 'income' ? 'e.g. Paycheck' : 'e.g. Rent, Streaming, Car insurance'}"><span class="error-msg">Please enter a name</span></div>
           <div class="field"><label for="r-amount">Amount</label><div class="input-wrap"><span class="prefix">${M.symbol(s.profile.currency)}</span><input class="input has-prefix" id="r-amount" name="amount" inputmode="decimal" value="${rule ? M.toInput(rule.amount, s.profile.currency) : ''}" placeholder="0.00"></div><span class="error-msg">Enter an amount greater than zero</span></div>
           <div class="field"><label for="r-freq" data-help="rule-repeats">Repeats</label><select class="select" id="r-freq" name="frequency">${BP.Recurring.FREQUENCIES.map((f) => BP.option(f.id, f.name, rule ? rule.frequency === f.id : f.id === 'monthly'))}</select></div>
           <div class="field"><label for="r-start" data-help="rule-start">${kind === 'income' ? 'Next payday' : 'Next due date'}</label><input class="input" type="date" id="r-start" name="startDate" value="${rule ? rule.startDate : D.todayISO()}"><span class="hint">Repeats from this date</span><span class="error-msg">Pick a valid date</span></div>
@@ -5391,7 +5529,7 @@ BP.Router.register('payments', {
     const monthlyBills = BP.sum(s.recurring.filter((x) => x.kind === 'expense' && x.active !== false), BP.Recurring.monthlyEquivalent); const monthlyIncome = BP.sum(s.recurring.filter((x) => x.kind === 'income' && x.active !== false), BP.Recurring.monthlyEquivalent);
     page.innerHTML = BP.html`
       <div class="page-head"><div><div class="kicker">${D.monthLabel(key)}</div><h1 data-help="payments">Bills, subscriptions and <i class="ital">paydays</i></h1></div><div class="page-actions"><div class="segmented"><button data-view="schedule" class="${view === 'schedule' ? 'active' : ''}">This month</button><button data-view="rules" class="${view === 'rules' ? 'active' : ''}">Recurring items</button></div><button class="btn secondary" data-add="income">${BP.icon('plus')} Income</button><button class="btn primary" data-add="expense">${BP.icon('plus')} Bill</button></div></div>
-      <div class="ledger cols-4 mb-16"><div class="stat" data-tone="calm"><div class="label">Due this month</div><div class="value">${BP.fmt(due)}</div><div class="delta">${bills.length} bills and subscriptions</div></div><div class="stat" data-tone="in"><div class="label">Paid</div><div class="value">${BP.fmt(paid)}</div><div class="delta">${BP.pct(paid, due)}% of the month</div></div><div class="stat ${overdue.length ? 'rose' : ''}"><div class="label">Overdue</div><div class="value">${overdue.length}</div><div class="delta">${overdue.length ? BP.fmt(BP.sum(overdue, (o) => o.amount)) + ' outstanding' : 'Nothing overdue'}</div></div><div class="stat" data-tone="in"><div class="label">Income expected</div><div class="value">${BP.fmt(BP.sum(incomes, (o) => o.amount))}</div><div class="delta">${incomes.length} paydays</div></div></div>
+      <div class="ledger cols-4 mb-16"><div class="stat" data-tone="calm"><div class="label">Due this month</div><div class="value">${BP.fmt(due)}</div><div class="delta">${BP.plural(bills.length, 'bill or subscription', 'bills and subscriptions')}</div></div><div class="stat" data-tone="in"><div class="label">Paid</div><div class="value">${BP.fmt(paid)}</div><div class="delta">${BP.pct(paid, due)}% of the month</div></div><div class="stat ${overdue.length ? 'rose' : ''}"><div class="label">Overdue</div><div class="value">${overdue.length}</div><div class="delta">${overdue.length ? BP.fmt(BP.sum(overdue, (o) => o.amount)) + ' outstanding' : 'Nothing overdue'}</div></div><div class="stat" data-tone="in"><div class="label">Income expected</div><div class="value">${BP.fmt(BP.sum(incomes, (o) => o.amount))}</div><div class="delta">${BP.plural(incomes.length, 'payday')}</div></div></div>
       ${view === 'schedule' ? (occAll.length ? BP.html`<div class="grid cols-2"><div class="card"><div class="card-head"><h3 data-help="mark-paid">Bills and subscriptions</h3><span class="card-title-sub">Tap Paid to record the transaction</span></div>${billRows.length ? billRows.map(row) : BP.html`<p class="muted">No bills due in ${D.monthLabel(key)}.</p>`}</div><div class="card"><div class="card-head"><h3>Income</h3></div>${incomeRows.length ? incomeRows.map(row) : BP.html`<p class="muted">No paydays scheduled.</p>`}</div></div>` : BP.html`<div class="card">${BP.UI.emptyState({ title: 'No recurring items yet', text: 'Add your rent, subscriptions, loan payments and paydays once. They appear every month on the calendar and here, with no duplicates.', action: 'add-bill', actionLabel: 'Add a bill' })}</div>`)
       : BP.html`<div class="grid cols-2"><div class="card"><div class="card-head"><h3 data-help="recurring-rules">Bills and subscriptions</h3><span class="card-title-sub">${BP.fmt(monthlyBills)} / month</span></div>${s.recurring.filter((x) => x.kind === 'expense').length ? BP.html`<div class="list">${s.recurring.filter((x) => x.kind === 'expense').sort((a, b) => a.name.localeCompare(b.name)).map(ruleRow)}</div>` : BP.html`<p class="muted">None yet.</p>`}</div><div class="card"><div class="card-head"><h3>Income</h3><span class="card-title-sub">${BP.fmt(monthlyIncome)} / month</span></div>${s.recurring.filter((x) => x.kind === 'income').length ? BP.html`<div class="list">${s.recurring.filter((x) => x.kind === 'income').map(ruleRow)}</div>` : BP.html`<p class="muted">Add your paycheck so the Paycheck view and calendar know your paydays.</p>`}</div></div>`}`;
     page.addEventListener('click', (e) => {
@@ -5495,7 +5633,8 @@ BP.Router.register('distribution', {
     const items = [...spent.entries()].map(([cid, v]) => { const c = BP.store.category(cid); return { name: c ? c.name : 'Unknown', value: v, color: c ? c.color : '#A79F99', cat: c }; }).sort((a, b) => b.value - a.value);
     const byGroup = BP.Defaults.GROUPS.filter((g) => g.kind === 'expense').map((g) => ({ name: g.name, value: BP.sum(items.filter((i) => i.cat && i.cat.group === g.id), (i) => i.value), color: BP.Charts.CHART_COLORS[BP.Defaults.GROUPS.indexOf(g) % BP.Charts.CHART_COLORS.length] })).filter((x) => x.value);
     const months = []; for (let i = 5; i >= 0; i--) { const k = D.addMonths(key, -i); months.push({ k, t: C.monthTotals(s, k) }); }
-    const top = items.slice(0, 5); const topSeries = top.map((it) => ({ name: it.name, color: it.color, values: months.map((m) => C.spentByCategory(s, C.monthTransactions(s, m.k)).get(it.cat ? it.cat.id : '') || 0) }));
+    const top = items.slice(0, 5); const topSeries = top.map((it, j) => ({ name: it.name, color: BP.Charts.CHART_COLORS[j % BP.Charts.CHART_COLORS.length], // distinct series colours: category colours repeat and look alike side by side
+ values: months.map((m) => C.spentByCategory(s, C.monthTransactions(s, m.k)).get(it.cat ? it.cat.id : '') || 0) }));
     const days = D.daysBetween(range.start, range.end) + 1; const dow = [0, 0, 0, 0, 0, 0, 0]; for (const t of txs) if (t.kind === 'expense') dow[D.weekday(t.date)] += t.amount;
     page.innerHTML = BP.html`
       <div class="page-head"><div><div class="kicker">${scope === 'month' ? D.monthLabel(key) : scope === 'quarter' ? 'Three months to ' + D.monthLabel(key, true) : 'Twelve months to ' + D.monthLabel(key, true)}</div><h1 data-help="distribution">Where the money <i class="ital">goes</i></h1></div><div class="page-actions"><div class="segmented">${[['month', 'Month'], ['quarter', '3 months'], ['year', '12 months']].map(([v, l]) => BP.html`<button data-scope="${v}" class="${scope === v ? 'active' : ''}">${l}</button>`)}</div></div></div>
@@ -5580,7 +5719,7 @@ const DebtPage = {
   edit(debt) {
     const s = BP.store.state; const M = BP.Money; const D = BP.Dates;
     BP.UI.openModal({ kicker: debt ? 'Edit' : 'New', title: debt ? 'Edit debt' : 'Add a debt', size: 'narrow',
-      body: BP.html`<form id="d-form" novalidate class="form-grid"><div class="field full"><label for="d-name">Name</label><input class="input" id="d-name" name="name" maxlength="60" value="${debt ? debt.name : ''}" placeholder="e.g. Visa, Student loan, Car loan"><span class="error-msg">Please name the debt</span></div>
+      body: BP.html`<form id="d-form" novalidate class="form-grid"><div class="field full"><label for="d-name">Name</label><input class="input" id="d-name" name="name" maxlength="60" value="${debt ? debt.name : ''}" placeholder="e.g. Credit card, Student loan, Car loan"><span class="error-msg">Please name the debt</span></div>
         <div class="field"><label for="d-bal">Balance when you started tracking</label><div class="input-wrap"><span class="prefix">${M.symbol(s.profile.currency)}</span><input class="input has-prefix" id="d-bal" name="balance" inputmode="decimal" value="${debt ? M.toInput(debt.balance, s.profile.currency) : ''}"></div><span class="error-msg">Enter a balance greater than zero</span></div>
         <div class="field"><label for="d-rate" data-help="debt-apr">Interest rate (APR %)</label><input class="input" id="d-rate" name="rate" inputmode="decimal" value="${debt ? debt.rate : ''}" placeholder="e.g. 19.99"><span class="error-msg">Enter a rate between 0 and 100</span></div>
         <div class="field"><label for="d-min" data-help="debt-min">Minimum monthly payment</label><div class="input-wrap"><span class="prefix">${M.symbol(s.profile.currency)}</span><input class="input has-prefix" id="d-min" name="min" inputmode="decimal" value="${debt ? M.toInput(debt.minimumPayment, s.profile.currency) : ''}"></div><span class="error-msg">Enter a valid amount</span></div>
@@ -5659,7 +5798,7 @@ BP.Router.register('networth', {
     const row = (i) => BP.html`<div class="list-item" style="padding:8px 0"><div class="grow"><span style="font-weight:500">${i.name}</span>${i.accountId ? BP.html` <span class="chip" style="font-size:9px;padding:1px 6px">Linked</span>` : ''}</div><div class="input-wrap" style="width:160px"><span class="prefix">${M.symbol(s.profile.currency)}</span><input class="input has-prefix num right" data-nw="${i.id}" inputmode="decimal" value="${snap[i.id] != null ? M.toInput(snap[i.id], s.profile.currency) : ''}" placeholder="${i.accountId ? M.toInput(Math.abs(bal(i.accountId)), s.profile.currency) : '0.00'}" style="height:34px;text-align:right" aria-label="${i.name}"></div><button class="btn icon sm plain" data-del-item="${i.id}" aria-label="Remove">${BP.icon('close')}</button></div>`;
     page.innerHTML = BP.html`
       <div class="page-head"><div><div class="kicker">${D.monthLabel(key)} snapshot</div><h1 data-help="networth">What you own minus what you <i class="ital">owe</i></h1><p class="page-sub">Enter balances once a month. Linked accounts show their current planner balance as a hint; the value you type is what counts.</p></div><div class="page-actions"><button class="btn secondary sm" data-fill>Fill from accounts</button><button class="btn secondary sm" data-copy-prev>Copy previous month</button><button class="btn primary" data-add>${BP.icon('plus')} Add item</button></div></div>
-      <div class="ledger cols-4 mb-16"><div class="stat" data-tone="in"><div class="label">Assets</div><div class="value">${BP.fmt(aTotal)}</div><div class="delta">${assets.length} items</div></div><div class="stat" data-tone="out"><div class="label">Liabilities</div><div class="value">${BP.fmt(lTotal)}</div><div class="delta">${liabs.length} items</div></div><div class="stat ink"><div class="label">Net worth</div><div class="value">${BP.fmt(aTotal - lTotal)}</div><div class="delta">${prevKey ? (change >= 0 ? '+' : '−') + BP.fmt(Math.abs(change)) + ' since ' + D.monthLabel(prevKey.key, true) : 'First snapshot'}</div></div><div class="stat" data-tone="calm"><div class="label">Growth since ${first ? D.monthLabel(first.key, true) : 'start'}</div><div class="value ${growth < 0 ? 'neg' : ''}">${growth >= 0 ? '+' : '−'}${BP.fmt(Math.abs(growth))}</div><div class="delta">${first && first.net ? (growth >= 0 ? '+' : '−') + Math.abs(Math.round((growth / Math.abs(first.net)) * 100)) + '%' : ''}</div></div></div>
+      <div class="ledger cols-4 mb-16"><div class="stat" data-tone="in"><div class="label">Assets</div><div class="value">${BP.fmt(aTotal)}</div><div class="delta">${BP.plural(assets.length, 'item')}</div></div><div class="stat" data-tone="out"><div class="label">Liabilities</div><div class="value">${BP.fmt(lTotal)}</div><div class="delta">${BP.plural(liabs.length, 'item')}</div></div><div class="stat ink"><div class="label">Net worth</div><div class="value">${BP.fmt(aTotal - lTotal)}</div><div class="delta">${prevKey ? (change >= 0 ? '+' : '−') + BP.fmt(Math.abs(change)) + ' since ' + D.monthLabel(prevKey.key, true) : 'First snapshot'}</div></div><div class="stat" data-tone="calm"><div class="label">Growth since ${first ? D.monthLabel(first.key, true) : 'start'}</div><div class="value ${growth < 0 ? 'neg' : ''}">${growth >= 0 ? '+' : '−'}${BP.fmt(Math.abs(growth))}</div><div class="delta">${first && first.net ? (growth >= 0 ? '+' : '−') + Math.abs(Math.round((growth / Math.abs(first.net)) * 100)) + '%' : ''}</div></div></div>
       ${series.length > 1 ? BP.html`<div class="card mb-16"><div class="card-head"><h3>Over time</h3><div class="legend"><span><span class="swatch" style="background:${BP.Charts.CHART_COLORS[2]}"></span>Assets</span><span><span class="swatch" style="background:${BP.Charts.CHART_COLORS[7]}"></span>Liabilities</span><span><span class="swatch" style="background:${BP.Charts.CHART_COLORS[0]}"></span>Net worth</span></div></div>${BP.raw(BP.Charts.lineChart({ labels: series.map((x) => D.monthLabel(x.key, true)), series: [{ name: 'Assets', values: series.map((x) => x.assets), color: BP.Charts.CHART_COLORS[2] }, { name: 'Liabilities', values: series.map((x) => x.liabilities), color: BP.Charts.CHART_COLORS[7] }, { name: 'Net worth', values: series.map((x) => x.net), color: BP.Charts.CHART_COLORS[0] }] }, { height: 230, width: 900, area: false }))}</div>` : ''}
       ${nw.items.length ? BP.html`<div class="grid cols-2"><div class="card"><div class="card-head"><h3>Assets</h3><span class="card-title-sub">${BP.fmt(aTotal)}</span></div>${assets.length ? BP.html`<div class="list">${assets.map(row)}</div>` : BP.html`<p class="muted">No assets yet.</p>`}</div><div class="card"><div class="card-head"><h3>Liabilities</h3><span class="card-title-sub">${BP.fmt(lTotal)}</span></div>${liabs.length ? BP.html`<div class="list">${liabs.map(row)}</div>` : BP.html`<p class="muted">No liabilities. Lucky you.</p>`}</div>
         <div class="card span-2"><div class="card-head"><h3>Assets vs liabilities</h3></div>${BP.raw(BP.Charts.stackedBar([{ name: 'Assets', value: aTotal, color: BP.Charts.CHART_COLORS[2] }, { name: 'Liabilities', value: lTotal, color: BP.Charts.CHART_COLORS[7] }]))}<div class="legend mt-8"><span>Assets ${BP.pct(aTotal, aTotal + lTotal)}%</span><span>Liabilities ${BP.pct(lTotal, aTotal + lTotal)}%</span></div></div></div>`
@@ -5798,6 +5937,7 @@ const SettingsPage = {
   },
   applySample(s) {
     const d = BP.Defaults.buildSampleData(s);
+    s.categories.push(...d.categories);
     s.accounts.push(...d.accounts); s.recurring.push(...d.recurring); s.transactions.push(...d.transactions); Object.assign(s.paymentStates, d.paymentStates);
     for (const [k, v] of Object.entries(d.budgetDefaults)) if (s.budgetDefaults[k] == null) s.budgetDefaults[k] = v;
     s.sinkingFunds.push(...d.sinkingFunds); s.debts.push(...d.debts); s.netWorth.items.push(...d.netWorth.items); Object.assign(s.netWorth.snapshots, d.netWorth.snapshots); s.forecasts.push(...d.forecasts); s.noSpend.challenges.push(...d.noSpend.challenges);
@@ -5811,6 +5951,10 @@ const SettingsPage = {
     s.sinkingFunds = s.sinkingFunds.filter((x) => !isS(x)); s.debts = s.debts.filter((x) => !isS(x)); s.forecasts = s.forecasts.filter((x) => !isS(x));
     const sampleNw = new Set(s.netWorth.items.filter(isS).map((x) => x.id)); s.netWorth.items = s.netWorth.items.filter((x) => !isS(x)); for (const k of Object.keys(s.netWorth.snapshots)) { for (const id of sampleNw) delete s.netWorth.snapshots[k][id]; if (!Object.keys(s.netWorth.snapshots[k]).length) delete s.netWorth.snapshots[k]; }
     const sampleCh = new Set(s.noSpend.challenges.filter(isS).map((x) => x.id)); s.noSpend.challenges = s.noSpend.challenges.filter((x) => !isS(x)); for (const id of sampleCh) delete s.noSpend.markedDays[id];
+    // Categories the sample had to recreate go too, unless something of the user's now uses them.
+    const used = new Set([...s.transactions.map((t) => t.categoryId), ...s.recurring.map((r) => r.categoryId)]);
+    const gone = new Set(s.categories.filter((c) => isS(c) && !used.has(c.id)).map((c) => c.id)); s.categories = s.categories.filter((c) => !gone.has(c.id)); for (const id of gone) delete s.budgetDefaults[id];
+    for (const c of s.categories) if (isS(c)) delete c.sample;
     s.meta.sampleLoaded = false;
   },
   editCategory(cat) {
@@ -5899,6 +6043,12 @@ const App = {
     BP.UI.wireRipples();
     BP.Help.init();
     if (s.profile.setupComplete && s.prefs.pinHash) BP.Lock.show(() => this.showShell()); else if (s.profile.setupComplete) this.showShell(); else BP.Welcome.render();
+    // Never lose the last edit when the tab is hidden or closed inside the short save delay.
+    window.addEventListener('pagehide', () => BP.store.flush());
+    window.addEventListener('beforeunload', () => BP.store.flush()); // Firefox may skip pagehide when a tab is closed; no dialog is shown
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') BP.store.flush(); });
+    // The planner open in two tabs or windows: keep them in step instead of one overwriting the other.
+    window.addEventListener('storage', (e) => { if (e.key === BP.Storage.KEY || e.key === null) BP.store.syncFromOtherTab(e.key === null ? null : e.newValue); });
     window.addEventListener('hashchange', () => { const id = location.hash.replace('#', ''); if (BP.Shell.mounted && id && id !== BP.Router.current && BP.Router.current !== undefined) BP.Router.go(id); });
     // Status at start: "Saved" only when the data on screen really came from storage and no write is pending.
     if (BP.store.status === 'idle') BP.store.setStatus(BP.store.loadedFromStorage ? 'saved' : 'idle');
