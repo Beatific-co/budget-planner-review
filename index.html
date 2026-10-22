@@ -4423,7 +4423,7 @@ const Ticker = {
     const C = BP.DailyContent; const i = tickerEntryIndex(iso);
     const n = tickerFirstName(rawName !== undefined ? rawName : (BP.store.state && BP.store.state.profile.name));
     let text, ref = '', named = false;
-    if (mode === 'verses') { const v = i < 0 ? C.verseLeap : C.verses[i]; text = v[0]; ref = v[1] + ' (WEB)'; }
+    if (mode === 'verses') { const v = i < 0 ? C.verseLeap : C.verses[i]; text = v[0]; ref = v[1]; }
     else { const tpl = i < 0 ? C.affirmationLeapNamed : C.affirmationsNamed[i]; named = !!(n.name && tpl); text = named ? tickerFill(tpl, n.name).replace('….', '…') : i < 0 ? C.affirmationLeap : C.affirmations[i]; }
     return { key: iso + (mode === 'verses' ? '|v' : '|a'), label: this.label(iso, mode, n, named), text, ref, mode };
   },
